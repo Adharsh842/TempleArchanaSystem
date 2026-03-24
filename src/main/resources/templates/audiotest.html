@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Audio Test</title>
+    <style>
+        body { font-family:Arial; background:#111; color:#FFD700; padding:2rem; }
+        button { padding:1rem 2rem; margin:0.5rem; border:none; border-radius:8px; cursor:pointer; font-size:1rem; font-weight:700; }
+        .btn-test { background:#8B0000; color:#FFD700; }
+        .btn-direct { background:#16a34a; color:white; }
+        #log { background:#000; padding:1rem; border-radius:8px; margin-top:1rem; font-family:monospace; font-size:0.85rem; white-space:pre-wrap; min-height:200px; color:#4ade80; }
+        input { padding:0.75rem; width:400px; border-radius:8px; border:2px solid #B8860B; background:#1a1a2e; color:#FFD700; font-family:monospace; }
+        audio { width:100%; margin-top:1rem; }
+        .section { background:#1a1a2e; padding:1.5rem; border-radius:12px; margin-bottom:1rem; border:1px solid #B8860B; }
+    </style>
+</head>
+<body>
+
+<h2>🛕 Audio Test Page</h2>
+
+<!-- TEST 1: Direct Google Translate TTS URL -->
+<div class="section">
+    <h3 style="color:#FFD700;margin-bottom:1rem;">
+        Test 1: Direct Google Translate TTS (Browser)
+    </h3>
+    <p style="color:#aaa;font-size:0.85rem;margin-bottom:0.75rem;">
+        This tests if Google TTS works directly from browser
+    </p>
+    <button class="btn-direct" onclick="playDirectGoogle('tamil')">
+        🎵 Play Tamil Directly
+    </button>
+    <button class="btn-direct" onclick="playDirectGoogle('english')">
+        🎵 Play English Directly
+    </button>
+    <audio id="directAudio" controls style="display:none;"></audio>
+</div>
+
+<!-- TEST 2: Backend API -->
+<div class="section">
+    <h3 style="color:#FFD700;margin-bottom:1rem;">
+        Test 2: Backend API (/api/free-audio)
+    </h3>
+    <p style="color:#aaa;font-size:0.85rem;margin-bottom:0.75rem;">
+        Enter a Booking ID to test the full flow
+    </p>
+    <input type="text" id="testBookingId"
+           placeholder="TEMPLE-20260315xxxxxx-XXXX"
+           value="">
+    <br><br>
+    <button class="btn-test" onclick="testBackendTamil()">
+        🎵 Test Backend Tamil
+    </button>
+    <button class="btn-test" onclick="testBackendEnglish()">
+        🎵 Test Backend English
+    </button>
+    <audio id="backendAudio" controls style="display:none;"></audio>
+</div>
+
+<!-- TEST 3: Web Speech API -->
+<div class="section">
+    <h3 style="color:#FFD700;margin-bottom:1rem;">
+        Test 3: Web Speech API (Browser TTS)
+    </h3>
+    <button class="btn-direct" onclick="testWebSpeech()">
+        🎙️ Test Browser Voice
+    </button>
+    <button class="btn-direct" onclick="listVoices()">
+        📋 List All Voices
+    </button>
+</div>
+
+<!-- LOG -->
+<div id="log">Logs will appear here...</div>
+
+<script>
+    function log(msg) {
+        var el = document.getElementById('log');
+        var time = new Date().toLocaleTimeString();
+        el.textContent += '[' + time + '] ' + msg + '\n';
+        el.scrollTop = el.scrollHeight;
+        console.log(msg);
+    }
+
+    // ── TEST 1: Direct Google TTS ────────────────────────────
+    function playDirectGoogle(lang) {
+        var text = lang === 'tamil'
+            ? 'ஓம். நமச்சிவாய. கோவிந்தா. கோவிந்தா.'
+            : 'Om. Namah Shivaya. Govinda. Govinda.';
+
+        var langCode = lang === 'tamil' ? 'ta' : 'en';
+        var encoded  = encodeURIComponent(text);
+        var url = 'https://translate.google.com/translate_tts' +
+                  '?ie=UTF-8&client=tw-ob&ttsspeed=1&tl=' +
+                  langCode + '&q=' + encoded;
+
+        log('Testing direct Google TTS...');
+        log('URL: ' + url);
+
+        var audio = document.getElementById('directAudio');
+        audio.style.display = 'block';
+        audio.src = url;
+        audio.load();
+        audio.play()
+            .then(function() {
+                log('✅ Direct Google TTS playing!');
+            })
+            .catch(function(e) {
+                log('❌ Direct play failed: ' + e.message);
+                log('Try clicking the audio player controls manually');
+            });
+    }
+
+    // ── TEST 2: Backend API ──────────────────────────────────
+    function testBackendTamil() {
+        testBackend('tamil');
+    }
+
+    function testBackendEnglish() {
+        testBackend('english');
+    }
+
+    function testBackend(lang) {
+        var bookingId = document.getElementById('testBookingId')
+                            .value.trim();
+        if (!bookingId) {
+            log('❌ Please enter a Booking ID first!');
+            alert('Please enter a Booking ID!');
+            return;
+        }
+
+        log('Testing backend API...');
+        log('Booking ID: ' + bookingId);
+        log('Language: ' + lang);
+        log('Calling: POST /api/free-audio/' + bookingId +
+            '?lang=' + lang);
+
+        fetch('/api/free-audio/' +
+              encodeURIComponent(bookingId) +
+              '?lang=' + lang,
+            { method: 'POST' }
+        )
+        .then(function(res) {
+            log('HTTP Status: ' + res.status);
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(function(data) {
+            log('API Response: ' + JSON.stringify(data));
+
+            if (data.success) {
+                log('✅ Audio generated: ' + data.audioPath);
+                var audio = document.getElementById('backendAudio');
+                audio.style.display = 'block';
+                audio.src = data.audioPath + '?t=' + Date.now();
+                audio.load();
+                audio.play()
+                    .then(function() {
+                        log('✅ Audio playing!');
+                    })
+                    .catch(function(e) {
+                        log('⚠️ Auto-play blocked: ' + e.message);
+                        log('Click the audio player to play manually');
+                    });
+            } else {
+                log('❌ API returned error: ' + data.message);
+            }
+        })
+        .catch(function(err) {
+            log('❌ API call failed: ' + err.message);
+        });
+    }
+
+    // ── TEST 3: Web Speech ───────────────────────────────────
+    function testWebSpeech() {
+        if (!('speechSynthesis' in window)) {
+            log('❌ Web Speech not supported in this browser');
+            return;
+        }
+
+        var text = 'Om Namah. Test successful. Govinda.';
+        var utt  = new SpeechSynthesisUtterance(text);
+        utt.rate = 0.9;
+        utt.onstart = function() { log('✅ Web Speech started'); };
+        utt.onend   = function() { log('✅ Web Speech ended'); };
+        utt.onerror = function(e) { log('❌ Web Speech error: ' + e.error); };
+
+        window.speechSynthesis.speak(utt);
+        log('Web Speech speak() called');
+    }
+
+    function listVoices() {
+        var voices = window.speechSynthesis.getVoices();
+        log('Total voices: ' + voices.length);
+        voices.forEach(function(v, i) {
+            log(i + ': ' + v.name + ' | ' + v.lang);
+        });
+    }
+
+    log('Audio Test Page loaded ✅');
+    log('Click buttons above to test each method');
+</script>
+</body>
+</html>

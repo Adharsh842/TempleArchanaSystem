@@ -1,0 +1,254 @@
+/* ============================================================
+   MAIN STYLESHEET — Temple Archana System
+   ============================================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #fef9f0;
+    color: #333;
+}
+
+/* ── TEMPLE HEADER ─────────────────────────────────────────── */
+.temple-header {
+    background: linear-gradient(135deg, #8B0000 0%, #B8860B 50%, #8B0000 100%);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.temple-logo {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.temple-header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+}
+
+.temple-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-top: 0.25rem;
+}
+
+/* ── NAVIGATION ────────────────────────────────────────────── */
+.main-nav {
+    background: #8B0000;
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-bottom: 3px solid #B8860B;
+}
+
+.main-nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.85rem 1.8rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.main-nav a:hover {
+    background: #B8860B;
+}
+
+/* ── HERO SECTION ──────────────────────────────────────────── */
+.hero-section {
+    background: linear-gradient(rgba(139,0,0,0.8), rgba(184,134,11,0.7)),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="80">🛕</text></svg>');
+    background-size: cover;
+    background-position: center;
+    min-height: 350px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.hero-overlay {
+    color: white;
+    padding: 2rem;
+}
+
+.hero-overlay h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.hero-overlay p {
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    opacity: 0.95;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #B8860B, #FFD700);
+    color: #8B0000;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: inline-block;
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(184,134,11,0.5);
+}
+
+/* ── FEATURES SECTION ──────────────────────────────────────── */
+.features-section {
+    padding: 3rem 2rem;
+    text-align: center;
+    background: white;
+}
+
+.features-section h2 {
+    font-size: 1.8rem;
+    color: #8B0000;
+    margin-bottom: 2rem;
+    font-family: 'Cinzel', serif;
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.feature-card {
+    background: #fef9f0;
+    border: 2px solid #B8860B;
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(139,0,0,0.1);
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.feature-card h3 {
+    color: #8B0000;
+    margin-bottom: 0.5rem;
+}
+
+/* ── ARCHANA TYPES ─────────────────────────────────────────── */
+.archana-section {
+    padding: 3rem 2rem;
+    background: linear-gradient(135deg, #fef9f0, #fff8e1);
+    text-align: center;
+}
+
+.archana-section h2 {
+    font-size: 1.8rem;
+    color: #8B0000;
+    margin-bottom: 2rem;
+    font-family: 'Cinzel', serif;
+}
+
+.archana-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.archana-card {
+    background: white;
+    border-top: 4px solid #B8860B;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+.archana-card h3 {
+    color: #8B0000;
+    margin-bottom: 0.5rem;
+}
+
+.price {
+    display: inline-block;
+    background: #8B0000;
+    color: #FFD700;
+    padding: 0.3rem 1rem;
+    border-radius: 20px;
+    font-weight: 700;
+    margin-top: 0.75rem;
+}
+
+/* ── ALERTS ────────────────────────────────────────────────── */
+.alert {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.alert-error {
+    background: #fee2e2;
+    border: 1px solid #ef4444;
+    color: #dc2626;
+}
+
+.alert-success {
+    background: #dcfce7;
+    border: 1px solid #22c55e;
+    color: #16a34a;
+}
+
+/* ── SPINNER ───────────────────────────────────────────────── */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #8B0000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ── FOOTER ────────────────────────────────────────────────── */
+.temple-footer {
+    background: #1a0000;
+    color: #FFD700;
+    text-align: center;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+}

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spiritual Guide | Temple</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold:#FFD700;
+            --gold2:#B8860B;
+            --red:#8B0000;
+            --dark:#0a0005;
+            --cream:#FFF8E7;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family:'Poppins',sans-serif;
+            background:linear-gradient(135deg,#0a0005,#1a000f);
+            min-height:100vh;
+            display:flex;
+            flex-direction:column;
+            color:#FFF8E7;
+        }
+
+        /* NAV */
+        .nav {
+            background:linear-gradient(135deg,#1a0000,#3d0000);
+            padding:0.85rem 2rem;
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            border-bottom:2px solid #B8860B;
+            flex-shrink:0;
+        }
+        .nav-brand {
+            font-family:'Cinzel',serif;
+            color:#FFD700;
+            font-size:1rem;
+            text-decoration:none;
+        }
+        .nav-links a {
+            color:#ddd;
+            text-decoration:none;
+            margin-left:1.5rem;
+            font-size:0.85rem;
+            transition:color 0.2s;
+        }
+        .nav-links a:hover { color:#FFD700; }
+
+        /* LAYOUT */
+        .chat-layout {
+            flex:1;
+            display:flex;
+            max-width:800px;
+            width:100%;
+            margin:0 auto;
+            padding:1rem;
+            flex-direction:column;
+            height:calc(100vh - 60px);
+        }
+
+        /* HEADER */
+        .chat-header {
+            text-align:center;
+            padding:1rem 0 0.75rem;
+            flex-shrink:0;
+        }
+        .chat-avatar {
+            width:70px;
+            height:70px;
+            background:linear-gradient(135deg,#8B0000,#B22222);
+            border:3px solid #B8860B;
+            border-radius:50%;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:2rem;
+            margin:0 auto 0.5rem;
+            animation:avPulse 3s infinite;
+        }
+        @keyframes avPulse {
+            0%,100%{ box-shadow:0 0 10px rgba(184,134,11,0.3); }
+            50%    { box-shadow:0 0 28px rgba(184,134,11,0.75); }
+        }
+        .chat-name {
+            font-family:'Cinzel',serif;
+            color:#FFD700;
+            font-size:1rem;
+            margin-bottom:0.15rem;
+        }
+        .chat-sub {
+            font-size:0.75rem;
+            color:rgba(255,248,231,0.5);
+        }
+        .online-dot {
+            display:inline-block;
+            width:7px; height:7px;
+            background:#4ade80;
+            border-radius:50%;
+            margin-right:4px;
+            animation:dotBlink 2s infinite;
+        }
+        @keyframes dotBlink {
+            0%,100%{ opacity:1; }
+            50%    { opacity:0.3; }
+        }
+
+        /* MESSAGES */
+        .msgs {
+            flex:1;
+            overflow-y:auto;
+            padding:1rem 0;
+            display:flex;
+            flex-direction:column;
+            gap:0.75rem;
+        }
+        .msgs::-webkit-scrollbar { width:4px; }
+        .msgs::-webkit-scrollbar-thumb {
+            background:rgba(184,134,11,0.3);
+            border-radius:2px;
+        }
+
+        /* MESSAGE ROW */
+        .mrow {
+            display:flex;
+            align-items:flex-end;
+            gap:8px;
+            animation:mslide 0.3s ease;
+        }
+        @keyframes mslide {
+            from{ opacity:0; transform:translateY(10px); }
+            to  { opacity:1; transform:translateY(0); }
+        }
+        .mrow.user { flex-direction:row-reverse; }
+
+        .mav {
+            width:32px; height:32px;
+            border-radius:50%;
+            flex-shrink:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:1rem;
+        }
+        .mav.bot {
+            background:linear-gradient(135deg,#8B0000,#B22222);
+            border:1px solid #B8860B;
+        }
+        .mav.user {
+            background:rgba(255,255,255,0.08);
+            border:1px solid rgba(255,255,255,0.15);
+        }
+
+        .bub {
+            max-width:75%;
+            padding:0.85rem 1.1rem;
+            border-radius:16px;
+            font-size:0.87rem;
+            line-height:1.75;
+        }
+        .mrow.bot .bub {
+            background:rgba(139,0,0,0.18);
+            border:1px solid rgba(184,134,11,0.22);
+            color:#FFF8E7;
+            border-bottom-left-radius:4px;
+        }
+        .mrow.user .bub {
+            background:rgba(255,255,255,0.09);
+            border:1px solid rgba(255,255,255,0.13);
+            color:#FFF8E7;
+            border-bottom-right-radius:4px;
+        }
+        .bub strong { color:#FFD700; }
+        .bub em     { color:rgba(255,248,231,0.85); }
+
+        /* SUGGESTIONS */
+        .sugs {
+            display:flex;
+            flex-wrap:wrap;
+            gap:0.4rem;
+            margin-top:0.4rem;
+            padding-left:40px;
+        }
+        .sug {
+            padding:0.3rem 0.8rem;
+            background:rgba(139,0,0,0.22);
+            border:1px solid rgba(184,134,11,0.28);
+            border-radius:20px;
+            color:#FFD700;
+            font-size:0.75rem;
+            cursor:pointer;
+            font-family:'Poppins',sans-serif;
+            transition:all 0.2s;
+        }
+        .sug:hover {
+            background:rgba(139,0,0,0.5);
+            border-color:#FFD700;
+        }
+
+        /* ACTION LINK */
+        .alink {
+            display:inline-block;
+            padding:0.4rem 1rem;
+            margin-top:0.35rem;
+            background:linear-gradient(135deg,#8B0000,#B22222);
+            color:#FFD700;
+            border:1px solid #B8860B;
+            border-radius:8px;
+            text-decoration:none;
+            font-size:0.8rem;
+            font-weight:600;
+            transition:all 0.2s;
+        }
+        .alink:hover {
+            background:#B8860B;
+            color:#0a0005;
+        }
+
+        /* TYPING */
+        .typing-row {
+            display:none;
+            align-items:center;
+            gap:8px;
+            flex-shrink:0;
+            min-height:30px;
+        }
+        .typing-row.show { display:flex; }
+        .tdots { display:flex; gap:4px; }
+        .tdot {
+            width:7px; height:7px;
+            background:#B8860B;
+            border-radius:50%;
+            animation:tBounce 1.2s infinite;
+        }
+        .tdot:nth-child(2){ animation-delay:0.2s; }
+        .tdot:nth-child(3){ animation-delay:0.4s; }
+        @keyframes tBounce {
+            0%,100%{ transform:translateY(0); opacity:0.4; }
+            50%    { transform:translateY(-6px); opacity:1; }
+        }
+
+        /* QUICK TOPICS */
+        .qtopics {
+            flex-shrink:0;
+            display:flex;
+            flex-wrap:wrap;
+            gap:0.4rem;
+            padding:0.5rem 0;
+        }
+        .qtop {
+            padding:0.38rem 0.85rem;
+            background:transparent;
+            border:1px solid rgba(184,134,11,0.22);
+            border-radius:20px;
+            color:rgba(255,248,231,0.65);
+            font-size:0.78rem;
+            cursor:pointer;
+            font-family:'Poppins',sans-serif;
+            transition:all 0.2s;
+        }
+        .qtop:hover {
+            border-color:#FFD700;
+            color:#FFD700;
+        }
+
+        /* INPUT */
+        .inp-wrap { flex-shrink:0; padding:0.6rem 0; }
+        .inp-row {
+            display:flex;
+            gap:0.5rem;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(184,134,11,0.28);
+            border-radius:50px;
+            padding:0.4rem 0.4rem 0.4rem 1rem;
+            transition:border-color 0.2s;
+        }
+        .inp-row:focus-within {
+            border-color:rgba(184,134,11,0.6);
+        }
+        .lang-btn {
+            padding:0 0.75rem;
+            background:transparent;
+            border:none;
+            color:#B8860B;
+            font-size:0.78rem;
+            cursor:pointer;
+            font-family:'Poppins',sans-serif;
+            flex-shrink:0;
+            transition:color 0.2s;
+        }
+        .lang-btn:hover { color:#FFD700; }
+        .chat-inp {
+            flex:1;
+            background:transparent;
+            border:none;
+            outline:none;
+            color:#FFF8E7;
+            font-family:'Poppins',sans-serif;
+            font-size:0.9rem;
+            padding:0.35rem 0;
+        }
+        .chat-inp::placeholder {
+            color:rgba(255,248,231,0.3);
+        }
+        .send-btn {
+            width:40px; height:40px;
+            background:linear-gradient(135deg,#8B0000,#B22222);
+            border:none;
+            border-radius:50%;
+            color:#FFD700;
+            font-size:1rem;
+            cursor:pointer;
+            flex-shrink:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            transition:all 0.2s;
+        }
+        .send-btn:hover {
+            background:#B8860B;
+            color:#0a0005;
+            transform:scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <a href="/" class="nav-brand">Sri Venkateswara Temple</a>
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/booking">Book Archana</a>
+        <a href="/donation">Donate</a>
+        <a href="/admin/login">Admin</a>
+    </div>
+</nav>
+
+<!-- MAIN LAYOUT -->
+<div class="chat-layout">
+
+    <!-- HEADER -->
+    <div class="chat-header">
+        <div class="chat-avatar">&#x1F549;</div>
+        <div class="chat-name">Spiritual Guide</div>
+        <div class="chat-sub">
+            <span class="online-dot"></span>
+            Aanmeega Vazhikaatti &nbsp;|&nbsp; Always here for you
+        </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="msgs" id="msgs"></div>
+
+    <!-- TYPING INDICATOR -->
+    <div class="typing-row" id="typingRow">
+        <div class="mav bot">&#x1F549;</div>
+        <div class="tdots">
+            <div class="tdot"></div>
+            <div class="tdot"></div>
+            <div class="tdot"></div>
+        </div>
+    </div>
+
+    <!-- QUICK TOPICS -->
+    <div class="qtopics" id="qtopics">
+        <button class="qtop"
+            onclick="sendQ('How to do Pushparchana?')">
+            Pushparchana Guide
+        </button>
+        <button class="qtop"
+            onclick="sendQ('I want to donate')">
+            Donate
+        </button>
+        <button class="qtop"
+            onclick="sendQ('Temple timings')">
+            Timings
+        </button>
+        <button class="qtop"
+            onclick="sendQ('I am feeling stressed')">
+            Need comfort
+        </button>
+        <button class="qtop"
+            onclick="sendQ('I want to book archana')">
+            Book Archana
+        </button>
+        <button class="qtop"
+            onclick="sendQ('Archana prices')">
+            Prices
+        </button>
+    </div>
+
+    <!-- INPUT -->
+    <div class="inp-wrap">
+        <div class="inp-row">
+            <button class="lang-btn"
+                    id="langBtn"
+                    onclick="toggleLang()">
+                Tamil Mode
+            </button>
+            <input type="text"
+                   id="chatInp"
+                   class="chat-inp"
+                   placeholder="Ask me anything..."
+                   onkeydown="if(event.key==='Enter') sendMsg()">
+            <button class="send-btn" onclick="sendMsg()">
+                &#10148;
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script th:inline="none">
+/*<![CDATA[*/
+'use strict';
+
+// GLOBALS
+var SID  = 'sess_' + Date.now();
+var LANG = 'english';
+var BUSY = false;
+
+// WELCOME MESSAGE ON LOAD
+window.addEventListener('load', function() {
+    addBot(
+        "Vanakkam! Welcome to Sri Venkateswara Temple!\n\n" +
+        "I am your Spiritual Guide. I can help you with:\n\n" +
+        "Pooja guidance - step by step instructions\n" +
+        "Spiritual comfort - slokams and blessings\n" +
+        "Archana booking - how to book easily\n" +
+        "Donation - types and how to donate\n" +
+        "Temple info - timings, prices, details\n\n" +
+        "How may I assist you today?",
+        [
+            'How to do Pushparchana?',
+            'I feel stressed',
+            'I want to donate',
+            'Temple timings'
+        ]
+    );
+});
+
+// SEND MESSAGE
+function sendMsg() {
+    var inp = document.getElementById('chatInp');
+    var msg = inp.value.trim();
+    if (!msg || BUSY) return;
+    inp.value = '';
+
+    var qw = document.getElementById('qtopics');
+    if (qw) qw.style.display = 'none';
+
+    addUser(msg);
+    showTyping();
+    BUSY = true;
+
+    var body =
+        'message='   + encodeURIComponent(msg)  +
+        '&sessionId='+ encodeURIComponent(SID)  +
+        '&language=' + encodeURIComponent(LANG);
+
+    fetch('/api/chat', {
+        method : 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body   : body
+    })
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(d) {
+        hideTyping();
+        BUSY = false;
+        addBot(d.response, d.suggestions);
+        if (d.showDonation) addAction('Donate Now', '/donation');
+        if (d.showBooking)  addAction('Book Archana', '/booking');
+    })
+    .catch(function(e) {
+        hideTyping();
+        BUSY = false;
+        console.error('Chat error:', e);
+        addBot(
+            "I apologize for the interruption. " +
+            "Please try again. " +
+            "Lord Venkateswara is always with you!",
+            ['Try again', 'Temple timings', 'Book Archana']
+        );
+    });
+}
+
+function sendQ(text) {
+    document.getElementById('chatInp').value = text;
+    sendMsg();
+}
+
+// ADD USER MESSAGE
+function addUser(text) {
+    var wrap = document.getElementById('msgs');
+    var div  = document.createElement('div');
+    div.className = 'mrow user';
+    div.innerHTML =
+        '<div class="mav user">&#128100;</div>' +
+        '<div class="bub">' + esc(text) + '</div>';
+    wrap.appendChild(div);
+    goBottom();
+}
+
+// ADD BOT MESSAGE
+function addBot(text, sugs) {
+    var wrap = document.getElementById('msgs');
+    var div  = document.createElement('div');
+    div.className = 'mrow bot';
+
+    var fmt = esc(text)
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g,     '<em>$1</em>')
+        .replace(/\n/g,            '<br>');
+
+    div.innerHTML =
+        '<div class="mav bot">&#x1F549;</div>' +
+        '<div class="bub">' + fmt + '</div>';
+    wrap.appendChild(div);
+
+    if (sugs && sugs.length) {
+        var sd = document.createElement('div');
+        sd.className = 'sugs';
+        for (var i = 0; i < sugs.length; i++) {
+            (function(s) {
+                var b = document.createElement('button');
+                b.className   = 'sug';
+                b.textContent = s;
+                b.onclick     = function() {
+                    document.getElementById('chatInp').value = s;
+                    sendMsg();
+                };
+                sd.appendChild(b);
+            })(sugs[i]);
+        }
+        wrap.appendChild(sd);
+    }
+    goBottom();
+}
+
+// ADD ACTION BUTTON
+function addAction(label, href) {
+    var wrap = document.getElementById('msgs');
+    var div  = document.createElement('div');
+    div.style.paddingLeft = '40px';
+    div.style.marginTop   = '0.25rem';
+    var a = document.createElement('a');
+    a.href        = href;
+    a.className   = 'alink';
+    a.textContent = label;
+    div.appendChild(a);
+    wrap.appendChild(div);
+    goBottom();
+}
+
+// TYPING INDICATOR
+function showTyping() {
+    var t = document.getElementById('typingRow');
+    if (t) t.classList.add('show');
+    goBottom();
+}
+function hideTyping() {
+    var t = document.getElementById('typingRow');
+    if (t) t.classList.remove('show');
+}
+
+// LANGUAGE TOGGLE
+function toggleLang() {
+    var btn = document.getElementById('langBtn');
+    var inp = document.getElementById('chatInp');
+    if (LANG === 'english') {
+        LANG = 'tamil';
+        btn.textContent = 'English Mode';
+        inp.placeholder = 'Ethaiyum kelunga...';
+    } else {
+        LANG = 'english';
+        btn.textContent = 'Tamil Mode';
+        inp.placeholder = 'Ask me anything...';
+    }
+}
+
+// HELPERS
+function goBottom() {
+    var wrap = document.getElementById('msgs');
+    setTimeout(function() {
+        wrap.scrollTop = wrap.scrollHeight;
+    }, 80);
+}
+
+function esc(t) {
+    return String(t)
+        .replace(/&/g,  '&amp;')
+        .replace(/</g,  '&lt;')
+        .replace(/>/g,  '&gt;')
+        .replace(/"/g,  '&quot;');
+}
+/*]]>*/
+</script>
+</body>
+</html>

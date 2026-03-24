@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Scanner | Temple Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+    <style>
+        :root {
+            --saffron:#FF6B00; --saffron2:#FF9500;
+            --gold:#FFD700;    --gold2:#FFA500;
+            --crimson:#C0392B; --deep-red:#8B0000;
+            --teal:#00897B;    --purple:#7B1FA2;
+            --cream:#FFF8E7;   --dark:#1A0A00;
+            --panel:rgba(255,255,255,0.03);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family:'DM Sans',sans-serif;
+            background:var(--dark); color:var(--cream);
+            min-height:100vh;
+        }
+
+        /* BG */
+        body::before {
+            content:''; position:fixed; inset:0; z-index:0;
+            background:
+                radial-gradient(ellipse 60% 50% at 0% 0%, rgba(255,107,0,0.1) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 60% at 100% 100%, rgba(123,31,162,0.08) 0%, transparent 60%),
+                linear-gradient(180deg,#1A0A00,#0D0500);
+            pointer-events:none;
+        }
+
+        /* ── HEADER ── */
+        .admin-header {
+            position:sticky; top:0; z-index:100;
+            background:rgba(26,10,0,0.95);
+            backdrop-filter:blur(20px);
+            border-bottom:1px solid rgba(255,165,0,0.15);
+            padding:0.85rem 2rem;
+            display:flex; justify-content:space-between; align-items:center;
+        }
+        .admin-brand {
+            font-family:'Yatra One',cursive;
+            font-size:1.2rem; color:var(--gold);
+        }
+        .admin-user { display:flex; gap:1rem; align-items:center; }
+        .admin-user a {
+            color:rgba(255,248,231,0.6); text-decoration:none;
+            font-size:0.85rem; padding:0.4rem 1rem;
+            border-radius:50px; transition:all 0.2s;
+            border:1px solid transparent;
+        }
+        .admin-user a:hover { color:var(--gold2); background:rgba(255,165,0,0.08); }
+        .logout-btn {
+            background:rgba(139,0,0,0.4) !important;
+            border:1px solid rgba(192,57,43,0.4) !important;
+            color:#FF8A80 !important;
+        }
+        .logout-btn:hover { background:rgba(139,0,0,0.7) !important; color:white !important; }
+
+        /* ── ADMIN NAV ── */
+        .admin-nav {
+            position:sticky; top:56px; z-index:99;
+            background:rgba(26,10,0,0.9);
+            backdrop-filter:blur(10px);
+            border-bottom:1px solid rgba(255,165,0,0.1);
+            display:flex; padding:0 2rem;
+        }
+        .admin-nav a {
+            color:rgba(255,248,231,0.5); text-decoration:none;
+            padding:0.75rem 1.2rem; font-size:0.85rem; font-weight:500;
+            border-bottom:2px solid transparent; transition:all 0.2s;
+            display:flex; align-items:center; gap:0.4rem;
+        }
+        .admin-nav a:hover { color:var(--gold2); }
+        .admin-nav a.active { color:var(--gold); border-bottom-color:var(--saffron); }
+
+        /* ── MAIN ── */
+        .main {
+            position:relative; z-index:1;
+            max-width:1100px; margin:0 auto;
+            padding:2rem 1.5rem 4rem;
+        }
+
+        .page-title {
+            font-family:'Yatra One',cursive;
+            font-size:1.5rem;
+            background:linear-gradient(135deg,var(--gold),var(--saffron2));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text; margin-bottom:0.25rem;
+        }
+        .page-sub {
+            color:rgba(255,248,231,0.35); font-size:0.85rem;
+            margin-bottom:2rem; display:flex; align-items:center; gap:0.5rem;
+        }
+        .fish-badge {
+            display:inline-flex; align-items:center; gap:0.3rem;
+            background:linear-gradient(135deg,#2d0060,#6600cc);
+            color:#cc99ff; border:1px solid #9900ff;
+            border-radius:6px; padding:0.2rem 0.7rem;
+            font-size:0.72rem; font-weight:600;
+        }
+
+        /* ── TWO COL ── */
+        .two-col {
+            display:grid;
+            grid-template-columns:1fr 1fr;
+            gap:1.5rem;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background:var(--panel);
+            border:1px solid rgba(255,165,0,0.12);
+            border-radius:20px; overflow:hidden;
+            animation:fadeUp 0.6s ease both;
+        }
+        .card:nth-child(2) { animation-delay:0.15s; }
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+
+        .card-header {
+            padding:1.2rem 1.5rem;
+            border-bottom:1px solid rgba(255,165,0,0.08);
+            display:flex; align-items:center; gap:0.6rem;
+        }
+        .card-header h3 {
+            font-size:0.95rem; font-weight:600; color:var(--gold2);
+        }
+        .card-body { padding:1.5rem; }
+
+        /* ── CAMERA ── */
+        .cam-box {
+            background:#0a0a0a;
+            border:1px solid rgba(255,165,0,0.1);
+            border-radius:14px; height:220px;
+            position:relative; overflow:hidden;
+            margin-bottom:1.2rem;
+        }
+        #camVideo { width:100%; height:100%; object-fit:cover; }
+        .cam-line {
+            position:absolute; left:8%; right:8%; height:2px;
+            background:linear-gradient(to right,transparent,#00ff88,transparent);
+            animation:scan 2s linear infinite;
+        }
+        .cam-corner {
+            position:absolute; width:20px; height:20px;
+            border-color:rgba(255,165,0,0.5); border-style:solid;
+        }
+        .cam-corner.tl { top:12px; left:12px; border-width:2px 0 0 2px; }
+        .cam-corner.tr { top:12px; right:12px; border-width:2px 2px 0 0; }
+        .cam-corner.bl { bottom:12px; left:12px; border-width:0 0 2px 2px; }
+        .cam-corner.br { bottom:12px; right:12px; border-width:0 2px 2px 0; }
+        @keyframes scan {
+            0%{top:15%;opacity:0.5;} 50%{opacity:1;} 100%{top:85%;opacity:0.5;}
+        }
+
+        /* ── BUTTONS ── */
+        .btn {
+            width:100%; padding:0.85rem;
+            border:none; border-radius:12px;
+            font-family:'DM Sans',sans-serif;
+            font-size:0.9rem; font-weight:700;
+            cursor:pointer; transition:all 0.25s;
+            display:flex; align-items:center;
+            justify-content:center; gap:0.5rem;
+            margin-bottom:0.6rem;
+        }
+        .btn:hover:not(:disabled) { transform:translateY(-2px); }
+        .btn:disabled { opacity:0.45; cursor:not-allowed; transform:none; }
+
+        .btn-start {
+            background:linear-gradient(135deg,var(--saffron),var(--gold2));
+            color:var(--dark);
+            box-shadow:0 4px 20px rgba(255,107,0,0.3);
+        }
+        .btn-start:hover:not(:disabled) { box-shadow:0 6px 30px rgba(255,107,0,0.5); }
+
+        .btn-stop {
+            background:rgba(192,57,43,0.2);
+            color:#FF8A80; border:1px solid rgba(192,57,43,0.3);
+        }
+        .btn-stop:hover:not(:disabled) { background:rgba(192,57,43,0.35); }
+
+        .btn-fish {
+            background:linear-gradient(135deg,#2d0060,#6600cc);
+            color:white; border:1.5px solid #cc99ff;
+        }
+        .btn-fish:hover:not(:disabled) {
+            background:linear-gradient(135deg,#6600cc,#9900ff);
+            box-shadow:0 4px 20px rgba(102,0,204,0.4);
+        }
+
+        .btn-maroon {
+            background:linear-gradient(135deg,#8B0000,#B22222);
+            color:var(--gold); border:1.5px solid rgba(255,215,0,0.3);
+        }
+        .btn-maroon:hover:not(:disabled) { background:rgba(255,215,0,0.1); }
+
+        .btn-blue { background:linear-gradient(135deg,#1e3a5f,#2563eb); color:white; }
+        .btn-green { background:linear-gradient(135deg,#14532d,#16a34a); color:white; border:1.5px solid #4ade80; }
+        .btn-teal { background:linear-gradient(135deg,#0f5f56,#0d9488); color:white; }
+        .btn-bell { background:linear-gradient(135deg,#3d2000,#8B6914); color:var(--gold); border:1px solid rgba(184,134,11,0.4); }
+        .btn-stop-all { background:rgba(59,0,0,0.6); color:#fca5a5; border:1px solid rgba(127,29,29,0.5); font-size:0.82rem; }
+        .btn-sm { padding:0.65rem; font-size:0.83rem; }
+
+        /* ── DIVIDER ── */
+        .divider {
+            text-align:center; color:rgba(255,248,231,0.2);
+            font-size:0.78rem; margin:0.75rem 0;
+            display:flex; align-items:center; gap:0.75rem;
+        }
+        .divider::before,.divider::after {
+            content:''; flex:1; height:1px;
+            background:rgba(255,165,0,0.1);
+        }
+
+        /* ── MANUAL INPUT ── */
+        .input-row { display:flex; gap:0.6rem; margin-bottom:0.75rem; }
+        .bid-input {
+            flex:1; background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,165,0,0.2);
+            border-radius:10px; padding:0.75rem 1rem;
+            color:var(--cream); font-family:monospace;
+            font-size:0.82rem; outline:none; transition:all 0.25s;
+        }
+        .bid-input::placeholder { color:rgba(255,248,231,0.2); }
+        .bid-input:focus {
+            border-color:var(--saffron2);
+            background:rgba(255,107,0,0.06);
+            box-shadow:0 0 0 3px rgba(255,107,0,0.1);
+        }
+        .btn-verify {
+            padding:0.75rem 1.1rem;
+            background:linear-gradient(135deg,var(--saffron),var(--gold2));
+            color:var(--dark); border:none; border-radius:10px;
+            font-family:'DM Sans',sans-serif; font-weight:700;
+            font-size:0.85rem; cursor:pointer; white-space:nowrap;
+            transition:all 0.25s;
+        }
+        .btn-verify:hover { transform:translateY(-1px); box-shadow:0 4px 15px rgba(255,107,0,0.4); }
+
+        /* ── STATUS ── */
+        .status {
+            padding:0.65rem 1rem; border-radius:10px;
+            font-size:0.8rem; border-left:3px solid;
+            display:none; margin-top:0.6rem;
+        }
+        .s-ok   { background:rgba(22,163,74,0.1);  border-color:#16a34a; color:#4ade80; display:block; }
+        .s-err  { background:rgba(192,57,43,0.1);  border-color:#ef4444; color:#fca5a5; display:block; }
+        .s-info { background:rgba(59,130,246,0.1); border-color:#3b82f6; color:#93c5fd; display:block; }
+        .s-warn { background:rgba(245,158,11,0.1); border-color:#f59e0b; color:#fcd34d; display:block; }
+
+        /* ── RESULT STATES ── */
+        .result-empty {
+            text-align:center; padding:3rem 1.5rem;
+            color:rgba(255,248,231,0.2);
+        }
+        .result-empty .big-icon { font-size:3rem; margin-bottom:0.75rem; display:block; opacity:0.4; }
+        .result-loading { text-align:center; padding:3rem 1.5rem; }
+        .spin {
+            width:36px; height:36px; border:3px solid rgba(255,165,0,0.1);
+            border-top-color:var(--saffron); border-radius:50%;
+            animation:spin 0.8s linear infinite; margin:0 auto 1rem;
+        }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .result-error { text-align:center; padding:2rem; }
+        .result-error .big-icon { font-size:2.5rem; margin-bottom:0.5rem; display:block; }
+
+        /* ── BOOKING TABLE ── */
+        .booking-info {
+            background:rgba(255,255,255,0.02);
+            border:1px solid rgba(255,165,0,0.08);
+            border-radius:12px; overflow:hidden;
+            margin-bottom:1rem;
+        }
+        .bi-row {
+            display:flex; justify-content:space-between;
+            align-items:center; padding:0.6rem 1rem;
+            border-bottom:1px solid rgba(255,255,255,0.03);
+            font-size:0.83rem;
+        }
+        .bi-row:last-child { border-bottom:none; }
+        .bi-label { color:rgba(255,248,231,0.35); font-size:0.75rem; text-transform:uppercase; letter-spacing:0.5px; }
+        .bi-value { color:var(--cream); font-weight:500; text-align:right; }
+        .bi-archana { color:var(--saffron2); font-weight:700; }
+        .bi-amount  { color:var(--gold); font-weight:700; }
+
+        .badge-result {
+            display:inline-flex; align-items:center; gap:0.4rem;
+            padding:0.3rem 0.9rem; border-radius:50px;
+            font-size:0.78rem; font-weight:700; margin-bottom:0.75rem;
+        }
+        .badge-ok   { background:rgba(22,163,74,0.15); color:#4ade80; border:1px solid rgba(22,163,74,0.3); }
+        .badge-warn { background:rgba(245,158,11,0.12); color:#fcd34d; border:1px solid rgba(245,158,11,0.25); }
+
+        /* ── VOICE PANEL ── */
+        .vpanel {
+            background:linear-gradient(160deg,rgba(13,13,26,0.8),rgba(26,26,46,0.8));
+            border:1px solid rgba(184,134,11,0.25);
+            border-radius:14px; padding:1.2rem;
+            margin-top:0.75rem;
+        }
+        .vpanel-title {
+            color:var(--gold); font-size:0.82rem; font-weight:700;
+            text-align:center; letter-spacing:1px;
+            margin-bottom:0.75rem; text-transform:uppercase;
+        }
+        .vname-box {
+            background:rgba(255,215,0,0.05);
+            border:1px solid rgba(184,134,11,0.2);
+            border-radius:8px; padding:0.4rem 0.8rem;
+            font-size:0.73rem; color:#ffe066;
+            text-align:center; margin-bottom:0.75rem;
+        }
+
+        /* STATUS DOT */
+        .a-row {
+            display:flex; align-items:center; gap:7px;
+            background:rgba(255,255,255,0.03);
+            border-radius:8px; padding:0.4rem 0.8rem;
+            margin-bottom:0.75rem;
+        }
+        .a-dot { width:8px; height:8px; border-radius:50%; background:#555; flex-shrink:0; }
+        .a-dot.on  { background:#4ade80; }
+        .a-dot.go  { background:var(--gold); animation:blink 0.9s infinite; }
+        .a-dot.err { background:#ef4444; }
+        @keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+        .a-txt { font-size:0.73rem; color:rgba(255,248,231,0.5); }
+
+        /* LANG TABS */
+        .ltabs { display:flex; gap:5px; margin-bottom:0.75rem; }
+        .ltab {
+            flex:1; padding:0.45rem;
+            border:1px solid rgba(184,134,11,0.3);
+            border-radius:8px; background:transparent;
+            color:rgba(184,134,11,0.8); font-size:0.75rem;
+            font-weight:600; cursor:pointer;
+            font-family:'DM Sans',sans-serif; transition:all 0.2s;
+        }
+        .ltab.on { background:rgba(184,134,11,0.2); color:var(--gold); border-color:var(--gold2); }
+
+        .vgrid { display:flex; flex-direction:column; gap:5px; }
+
+        /* AUDIO BOX */
+        .ap-box {
+            display:none; border-radius:10px;
+            padding:0.75rem; margin-top:0.5rem;
+            background:#1a0040; border:1px solid #9900ff;
+        }
+        .ap-label { font-size:0.72rem; color:#cc99ff; margin-bottom:0.4rem; }
+        audio { width:100%; }
+
+        /* SCRIPT BOX */
+        .sbox {
+            background:rgba(6,6,26,0.8);
+            border:1px solid rgba(184,134,11,0.2);
+            border-radius:10px; padding:0.8rem;
+            margin-top:0.8rem; display:none;
+            color:#ffe066; font-size:0.75rem;
+            line-height:1.9; max-height:150px; overflow-y:auto;
+        }
+        .slabel { color:var(--gold); font-weight:600; font-size:0.77rem; margin-bottom:4px; }
+        .sdone  { color:#4ade80; font-weight:600; margin-top:7px; padding-top:7px;
+                  border-top:1px solid rgba(26,58,42,0.5); font-size:0.75rem; }
+
+        /* ── FOOTER ── */
+        footer {
+            position:relative; z-index:1;
+            background:rgba(0,0,0,0.3);
+            border-top:1px solid rgba(255,165,0,0.08);
+            text-align:center; padding:1.2rem;
+            color:rgba(255,248,231,0.25); font-size:0.78rem;
+            margin-top:2rem;
+        }
+
+        @media (max-width:768px) {
+            .two-col { grid-template-columns:1fr; }
+            .main { padding:1.5rem 1rem 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="admin-header">
+    <div class="admin-brand">🛕 Temple Admin Portal</div>
+    <div class="admin-user">
+        <a href="/admin/dashboard">📊 Dashboard</a>
+        <a href="/admin/logout" class="logout-btn">🚪 Logout</a>
+    </div>
+</header>
+
+<!-- NAV -->
+<nav class="admin-nav">
+    <a href="/admin/dashboard">📊 Dashboard</a>
+    <a href="/admin/scanner" class="active">📱 QR Scanner</a>
+    <a href="/">🏠 Home</a>
+</nav>
+
+<div class="main">
+    <div class="page-title">📱 QR Scanner & AI Voice Archana</div>
+    <div class="page-sub">
+        Scan → Verify → Bell → Fish Audio AI Priest Voice
+        <span class="fish-badge">🐟 Fish Audio</span>
+    </div>
+
+    <div class="two-col">
+
+        <!-- LEFT: SCANNER -->
+        <div class="card">
+            <div class="card-header">
+                <span>📷</span>
+                <h3>QR Code Scanner</h3>
+            </div>
+            <div class="card-body">
+
+                <div class="cam-box">
+                    <video id="camVideo" playsinline muted></video>
+                    <div class="cam-line"></div>
+                    <div class="cam-corner tl"></div>
+                    <div class="cam-corner tr"></div>
+                    <div class="cam-corner bl"></div>
+                    <div class="cam-corner br"></div>
+                </div>
+
+                <button class="btn btn-start" id="btnStart" type="button" onclick="startCam()">
+                    📷 Start Camera Scan
+                </button>
+                <button class="btn btn-stop" id="btnStop" type="button" onclick="stopCam()" style="display:none;">
+                    ⏹️ Stop Camera
+                </button>
+
+                <div class="divider">OR enter Booking ID manually</div>
+
+                <div class="input-row">
+                    <input type="text" id="bidInput" class="bid-input"
+                           placeholder="TEMPLE-20260315xxxxxx-XXXX"
+                           onkeydown="if(event.key==='Enter') doVerify()">
+                    <button class="btn-verify" type="button" onclick="doVerify()">
+                        🔍 Verify
+                    </button>
+                </div>
+
+                <div id="statusBox" class="status"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT: RESULT + VOICE -->
+        <div class="card">
+            <div class="card-header">
+                <span>✅</span>
+                <h3>Result and Voice Archana</h3>
+            </div>
+            <div class="card-body">
+
+                <!-- EMPTY -->
+                <div id="sEmpty" class="result-empty">
+                    <span class="big-icon">🛕</span>
+                    <p style="font-size:0.85rem;">Scan QR or enter Booking ID</p>
+                    <p style="font-size:0.75rem;margin-top:0.3rem;">🐟 Fish Audio AI Priest Voice available</p>
+                </div>
+
+                <!-- LOADING -->
+                <div id="sLoading" style="display:none;" class="result-loading">
+                    <div class="spin"></div>
+                    <p style="color:rgba(255,248,231,0.4);font-size:0.85rem;">Verifying booking...</p>
+                </div>
+
+                <!-- ERROR -->
+                <div id="sError" style="display:none;" class="result-error">
+                    <span class="big-icon">❌</span>
+                    <p id="errMsg" style="font-size:0.85rem;color:#fca5a5;font-weight:600;"></p>
+                </div>
+
+                <!-- SUCCESS -->
+                <div id="sSuccess" style="display:none;">
+
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:0.85rem;">
+                        <span id="resBadge" class="badge-result badge-ok">✅ Verified Now</span>
+                        <span id="resMsg" style="font-size:0.8rem;color:rgba(255,248,231,0.4);"></span>
+                    </div>
+
+                    <div class="booking-info" id="bookingInfo"></div>
+
+                    <!-- VOICE PANEL -->
+                    <div class="vpanel">
+                        <div class="vpanel-title">
+                            🎙️ AI Priest Archana Voice
+                            <span class="fish-badge" style="margin-left:6px;">🐟 Fish</span>
+                        </div>
+
+                        <div class="vname-box" id="vNameBox">🐟 Fish Audio AI Priest Voice Ready</div>
+
+                        <div class="a-row">
+                            <div class="a-dot on" id="aDot"></div>
+                            <span class="a-txt" id="aTxt">Ready — click button to play</span>
+                        </div>
+
+                        <div class="ltabs">
+                            <button class="ltab on" id="ltTamil" type="button" onclick="setLang('tamil')">🇮🇳 Tamil</button>
+                            <button class="ltab"    id="ltEng"   type="button" onclick="setLang('eng')">🔤 English</button>
+                        </div>
+
+                        <!-- TAMIL -->
+                        <div id="pTamil" class="vgrid">
+                            <button class="btn btn-fish"         id="btnGTamil"  type="button" onclick="playFishAudio('tamil')">🐟 Fish AI Tamil Priest Voice</button>
+                            <button class="btn btn-maroon btn-sm" id="btnValluvar" type="button" onclick="bellAndValluvar()">🔔 Bell + 🎙️ Tamil Valluvar</button>
+                            <button class="btn btn-blue btn-sm"   type="button" onclick="valluvarOnly()">🎙️ Valluvar Only</button>
+                            <button class="btn btn-bell btn-sm"   type="button" onclick="bellOnly()">🔔 Temple Bell Only</button>
+                            <button class="btn btn-stop-all"      type="button" onclick="stopAll()">⏹️ Stop All Sound</button>
+                            <div id="fishAudioBox" class="ap-box">
+                                <div class="ap-label">🐟 Fish AI Priest Audio:</div>
+                                <audio id="fishAudio" controls></audio>
+                            </div>
+                        </div>
+
+                        <!-- ENGLISH -->
+                        <div id="pEng" class="vgrid" style="display:none;">
+                            <button class="btn btn-fish"          id="btnGEng"    type="button" onclick="playFishAudio('english')">🐟 Fish AI English Priest Voice</button>
+                            <button class="btn btn-green btn-sm"  id="btnEngFull" type="button" onclick="bellAndEnglish()">🔔 Bell + 🎙️ English Priest</button>
+                            <button class="btn btn-teal btn-sm"   type="button" onclick="quickEng()">📢 Quick Announcement</button>
+                            <button class="btn btn-bell btn-sm"   type="button" onclick="bellOnly()">🔔 Temple Bell Only</button>
+                            <button class="btn btn-stop-all"      type="button" onclick="stopAll()">⏹️ Stop All Sound</button>
+                        </div>
+
+                        <div id="sBox" class="sbox"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<footer>🛕 Sri Venkateswara Temple | Admin QR Scanner | 🐟 Fish Audio AI Priest Voice</footer>
+
+<script th:inline="none">
+'use strict';
+
+var bData      = null;
+var audioCtx   = null;
+var omNodes    = [];
+var speaking   = false;
+var camScanner = null;
+var lang       = 'tamil';
+var tVoice     = null;
+
+window.addEventListener('load', function() { setTimeout(loadVoices, 600); });
+
+function loadVoices() {
+    var all = window.speechSynthesis.getVoices();
+    if (!all.length) {
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.onvoiceschanged = null;
+            loadVoices();
+        };
+        return;
+    }
+    tVoice =
+        all.find(function(v) { return v.name === 'Microsoft Valluvar - Tamil (India)'; }) ||
+        all.find(function(v) { return v.name.indexOf('Valluvar') !== -1; }) ||
+        all.find(function(v) { return v.lang === 'ta-IN'; }) ||
+        all.find(function(v) { return v.lang.startsWith('ta'); }) || null;
+    var nb = document.getElementById('vNameBox');
+    if (nb) {
+        nb.innerHTML = '🐟 Fish Audio AI Priest' + (tVoice ? ' &nbsp;|&nbsp; 🎙️ Fallback: <strong>' + tVoice.name + '</strong>' : '');
+        nb.style.color = '#cc99ff';
+    }
+}
+
+function showSt(msg, type) {
+    var el = document.getElementById('statusBox');
+    if (!el) return;
+    el.textContent = msg;
+    el.className = 'status s-' + type;
+}
+
+function setS(name) {
+    ['sEmpty','sLoading','sError','sSuccess'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    var cap = name.charAt(0).toUpperCase() + name.slice(1);
+    var t = document.getElementById('s' + cap);
+    if (t) t.style.display = 'block';
+}
+
+function setLang(l) {
+    lang = l;
+    document.getElementById('ltTamil').classList.toggle('on', l === 'tamil');
+    document.getElementById('ltEng').classList.toggle('on',   l === 'eng');
+    var pt = document.getElementById('pTamil');
+    var pe = document.getElementById('pEng');
+    if (pt) { pt.style.display = l === 'tamil' ? 'flex' : 'none'; pt.style.flexDirection = 'column'; }
+    if (pe) { pe.style.display = l === 'eng'   ? 'flex' : 'none'; pe.style.flexDirection = 'column'; }
+    stopAll();
+}
+
+function doVerify() {
+    var inp = document.getElementById('bidInput');
+    var val = inp ? inp.value.trim() : '';
+    if (!val) { showSt('Please enter a Booking ID.', 'warn'); if (inp) inp.focus(); return; }
+    verifyAPI(val);
+}
+
+function verifyAPI(bid) {
+    bid = bid.trim();
+    showSt('Verifying: ' + bid + '...', 'info');
+    setS('loading');
+    fetch('/api/verify/' + encodeURIComponent(bid))
+        .then(function(r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .then(function(d) {
+            bData = d.booking || null;
+            if (d.success || d.alreadyVerified) {
+                showSuccess(d, bData);
+                showSt('Booking verified successfully.', 'ok');
+            } else {
+                setS('error');
+                var em = document.getElementById('errMsg');
+                if (em) em.textContent = d.message || 'Not found.';
+                showSt(d.message || 'Not found.', 'err');
+            }
+        })
+        .catch(function(e) {
+            setS('error');
+            var em = document.getElementById('errMsg');
+            if (em) em.textContent = 'Error: ' + e.message;
+            showSt('Error: ' + e.message, 'err');
+        });
+}
+
+function showSuccess(d, bk) {
+    setS('success');
+    var badge = document.getElementById('resBadge');
+    var msg   = document.getElementById('resMsg');
+    if (badge) {
+        badge.className   = 'badge-result ' + (d.alreadyVerified ? 'badge-warn' : 'badge-ok');
+        badge.textContent = d.alreadyVerified ? '⚠️ Already Verified' : '✅ Verified Now';
+    }
+    if (msg) msg.textContent = d.message || '';
+
+    var info = document.getElementById('bookingInfo');
+    if (info && bk) {
+        info.innerHTML =
+            BI('Booking ID', '<span style="font-family:monospace;font-size:0.75rem;color:rgba(255,165,0,0.7);">' + bk.bookingId + '</span>') +
+            BI('Devotee',    '<strong style="color:#fff;">' + bk.devoteeName + '</strong>') +
+            BI('Gothram',    bk.gothram) +
+            BI('Nakshatram', bk.nakshatram) +
+            BI('Archana',    '<span class="bi-archana">' + bk.archanaType + '</span>') +
+            BI('Time Slot',  bk.timeSlot) +
+            BI('Amount',     '<span class="bi-amount">₹' + bk.amount + '</span>');
+    }
+    loadVoices(); setLang('tamil');
+    setAS('on', 'Ready — click 🐟 Fish AI Priest Voice');
+}
+
+function BI(l, v) {
+    return '<div class="bi-row"><span class="bi-label">' + l + '</span><span class="bi-value">' + v + '</span></div>';
+}
+
+function getAC() {
+    return new Promise(function(resolve) {
+        try {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) { resolve(null); return; }
+            if (!audioCtx) audioCtx = new AC();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume().then(function() { resolve(audioCtx); }).catch(function() { audioCtx = new AC(); resolve(audioCtx); });
+            } else if (audioCtx.state === 'closed') { audioCtx = new AC(); resolve(audioCtx); }
+            else { resolve(audioCtx); }
+        } catch(e) { resolve(null); }
+    });
+}
+
+function oneBell(ctx, t, v) {
+    [880,1320,1760].forEach(function(f,i) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = 'sine'; o.frequency.setValueAtTime(f,t);
+        o.frequency.exponentialRampToValueAtTime(f*0.97, t+3);
+        var vol = v/(i+1);
+        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(vol, t+0.008);
+        g.gain.exponentialRampToValueAtTime(0.001, t+3.5);
+        o.start(t); o.stop(t+3.6);
+    });
+}
+function threeBells(ctx) { var n=ctx.currentTime; oneBell(ctx,n,0.8); oneBell(ctx,n+1.3,0.8); oneBell(ctx,n+2.5,0.9); }
+
+function startOm(ctx) {
+    stopOm();
+    [[136.1,0.06],[272.2,0.03],[408.3,0.015]].forEach(function(x) {
+        var o=ctx.createOscillator(), g=ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type='sine'; o.frequency.value=x[0];
+        g.gain.setValueAtTime(0.001,ctx.currentTime);
+        g.gain.linearRampToValueAtTime(x[1],ctx.currentTime+2.5);
+        o.start(); omNodes.push({o:o,g:g,ctx:ctx});
+    });
+}
+function stopOm() {
+    omNodes.forEach(function(x) {
+        try { x.g.gain.linearRampToValueAtTime(0.001,x.ctx.currentTime+1); setTimeout(function(){try{x.o.stop();}catch(e){}},1100); } catch(e){}
+    });
+    omNodes=[];
+}
+
+function playFishAudio(l) {
+    if (!bData) { alert('Please verify a booking first.'); return; }
+    var btnId = l==='tamil' ? 'btnGTamil' : 'btnGEng';
+    var btn   = document.getElementById(btnId);
+    if (btn) { btn.textContent='⏳ Generating...'; btn.disabled=true; }
+    setAS('go','🐟 Fish Audio generating priest voice...');
+    var fishBox = document.getElementById('fishAudioBox');
+    if (fishBox) fishBox.style.display='block';
+    getAC().then(function(ctx) {
+        if (ctx) { threeBells(ctx); setTimeout(function(){startOm(ctx);},4500); }
+    });
+    fetch('/api/fish-audio/'+encodeURIComponent(bData.bookingId)+'?lang='+(l==='tamil'?'tamil':'english'),{method:'POST'})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+        .then(function(d){
+            if(d.success){
+                if(d.script) showScript(d.script,l);
+                var audio=document.getElementById('fishAudio');
+                if(!audio) return;
+                audio.src=d.audioPath+'?t='+Date.now(); audio.load();
+                audio.play().then(function(){
+                    setAS('go','🐟 Fish AI Priest chanting archana...');
+                    if(btn) btn.textContent='🔊 Priest chanting...';
+                    audio.onended=function(){ stopOm(); setAS('on','✅ Archana complete! Sarva Mangala! 🙏'); resetBtns(); appendDone(); };
+                }).catch(function(){
+                    setAS('on','👆 Click ▶ on the audio player to play');
+                    resetBtns();
+                });
+            } else {
+                setAS('err','⚠️ '+d.message+' → Using Valluvar...');
+                resetBtns();
+                setTimeout(function(){speakValluvar('btnValluvar');},1000);
+            }
+        })
+        .catch(function(err){
+            setAS('err','⚠️ '+err.message+' → Using Valluvar...');
+            resetBtns();
+            setTimeout(function(){speakValluvar('btnValluvar');},1000);
+        });
+}
+
+function bellAndValluvar() {
+    var btn=document.getElementById('btnValluvar');
+    if(btn){btn.textContent='⏳...';btn.disabled=true;}
+    setAS('go','🔔 Bell...');
+    getAC().then(function(ctx){
+        if(!ctx){alert('Use Chrome.');resetBtns();return;}
+        threeBells(ctx);
+        setTimeout(function(){startOm(ctx);setTimeout(function(){speakValluvar('btnValluvar');},1500);},4500);
+    });
+}
+function valluvarOnly() { getAC().then(function(){speakValluvar('btnValluvar');}); }
+function bellAndEnglish() {
+    var btn=document.getElementById('btnEngFull');
+    if(btn){btn.textContent='⏳...';btn.disabled=true;}
+    getAC().then(function(ctx){
+        if(!ctx){alert('Use Chrome.');resetBtns();return;}
+        threeBells(ctx);
+        setTimeout(function(){startOm(ctx);setTimeout(function(){speakEng(engScript(),'btnEngFull');},1500);},4500);
+    });
+}
+function quickEng() { getAC().then(function(){speakEng(quickScript(),'btnEngFull');}); }
+function bellOnly() {
+    setAS('go','🔔 Ringing...');
+    getAC().then(function(ctx){ if(!ctx){alert('Use Chrome.');return;} threeBells(ctx); setTimeout(function(){setAS('on','✅ Bell done');},5000); });
+}
+function stopAll() {
+    if('speechSynthesis' in window) window.speechSynthesis.cancel();
+    stopOm(); speaking=false; resetBtns(); setAS('on','Stopped');
+    var s=document.getElementById('sBox'); if(s) s.style.display='none';
+    var fa=document.getElementById('fishAudio'); if(fa){try{fa.pause();fa.currentTime=0;}catch(e){}}
+}
+
+function speakValluvar(btnId) {
+    if(!('speechSynthesis' in window)){alert('Use Chrome.');return;}
+    var script=buildTamilScript();
+    showScript(script,'tamil');
+    window.speechSynthesis.cancel(); speaking=true;
+    var u=new SpeechSynthesisUtterance(script);
+    u.rate=0.90; u.pitch=0.75; u.volume=1.0;
+    var voices=window.speechSynthesis.getVoices();
+    var tv=voices.find(function(v){return v.name==='Microsoft Valluvar - Tamil (India)';}) ||
+           voices.find(function(v){return v.name.indexOf('Valluvar')!==-1;}) ||
+           voices.find(function(v){return v.lang==='ta-IN';}) ||
+           voices.find(function(v){return v.lang.startsWith('ta');});
+    if(tv){u.voice=tv;setAS('go','🎙️ '+tv.name+' chanting...');}
+    else setAS('go','🎙️ Chanting...');
+    var btn=document.getElementById(btnId);
+    if(btn){btn.textContent='🎙️ Chanting...';btn.disabled=true;}
+    u.onend=function(){speaking=false;stopOm();if(btn){btn.textContent='🔔 Bell + 🎙️ Tamil Valluvar';btn.disabled=false;}setAS('on','✅ Complete. Sarva Mangala! 🙏');appendDone();};
+    u.onerror=function(e){speaking=false;stopOm();resetBtns();setAS('err','⚠️ '+e.error);};
+    window.speechSynthesis.speak(u);
+    var ka=setInterval(function(){if(!speaking){clearInterval(ka);return;}if(window.speechSynthesis.paused)window.speechSynthesis.resume();},8000);
+}
+
+function speakEng(text,btnId) {
+    if(!('speechSynthesis' in window)){alert('Use Chrome.');return;}
+    window.speechSynthesis.cancel(); speaking=true;
+    showScript(text,'eng'); setAS('go','🎙️ English archana...');
+    var u=new SpeechSynthesisUtterance(text);
+    u.rate=0.90; u.pitch=0.70; u.volume=1.0;
+    var voices=window.speechSynthesis.getVoices();
+    var v=voices.find(function(v){return v.lang==='en-IN';}) || voices.find(function(v){return v.lang==='en-GB';}) || voices.find(function(v){return v.lang.startsWith('en');});
+    if(v) u.voice=v;
+    var btn=document.getElementById(btnId);
+    if(btn){btn.textContent='🎙️ Chanting...';btn.disabled=true;}
+    u.onend=function(){speaking=false;stopOm();if(btn){btn.textContent='🔔 Bell + 🎙️ English Priest';btn.disabled=false;}setAS('on','✅ Complete. Govinda!');appendDone();};
+    u.onerror=function(e){speaking=false;stopOm();resetBtns();setAS('err','⚠️ '+e.error);};
+    window.speechSynthesis.speak(u);
+    var ka=setInterval(function(){if(!speaking){clearInterval(ka);return;}if(window.speechSynthesis.paused)window.speechSynthesis.resume();},8000);
+}
+
+function buildTamilScript() {
+    if(!bData) return 'Om. Om. Om. Nama Shivaya. Govindaa.';
+    return 'Om. Om. Om. Shubham Karodi Kalyanam. Aarogyam. Thana Sampatha. Om. Adiyargale. '+bData.devoteeName+'. Avargalukku. '+bData.gothram+'. Gothiram. '+bData.nakshatram+'. Natchathiram. '+vChant(bData.archanaType)+'Sarva Mangalam. Piraapthirastu. Aayu. Arokyam. Aishwaryam. Om Shaanthi. Om Shaanthi. Om Shaanthi. Jai Sri Venkadaeshwara. Govindaa. Govindaa. Govindaa.';
+}
+function vChant(t) {
+    if(t==='Pushparchana')    return 'Pushpa Archana. Samarppanam. Om Namo Narayanaya. ';
+    if(t==='Kumkumarchana')   return 'Kumkuma Archana. Samarppanam. Om Sakthi Namaha. ';
+    if(t==='Abhishekam')      return 'Thiruvabishekam. Samarppanam. Om Namah Shivaya. ';
+    if(t==='Sahasranamam')    return 'Sahasranama Archana. Samarppanam. Om Namo Bhagavathe Vasudevaaya. ';
+    if(t==='Ganapathi Homam') return 'Ganapathi Homam. Samarppanam. Om Gam Ganapataye Namaha. ';
+    return 'Archana. Samarppanam. Om Namo Narayanaya. ';
+}
+function engScript() {
+    if(!bData) return 'Om. Archana samarpanam. Govinda.';
+    return 'Om. Om. Om. Shubham Karoti Kalyanam. '+bData.devoteeName+' avargalukku. '+bData.gothram+' gothram. '+bData.nakshatram+' nakshatram. '+eChant(bData.archanaType)+'Sarva Mangala Prapthirastu. Om Shanti. Om Shanti. Om Shanti. Jai Sri Venkateswara. Govinda. Govinda. Govinda.';
+}
+function eChant(t) {
+    if(t==='Pushparchana')    return 'Pushpa Archana samarpanam. Om Namo Narayanaya. ';
+    if(t==='Kumkumarchana')   return 'Kumkuma Archana samarpanam. Om Shakti Namaha. ';
+    if(t==='Abhishekam')      return 'Abhishekam samarpanam. Om Namah Shivaya. ';
+    if(t==='Sahasranamam')    return 'Sahasranama samarpanam. Om Namo Vasudevaya. ';
+    if(t==='Ganapathi Homam') return 'Ganapathi Homam. Om Gam Ganapataye Namaha. ';
+    return 'Archana samarpanam. Om Namo Narayanaya. ';
+}
+function quickScript() {
+    if(!bData) return 'Om Namah. Archana confirmed. Govinda.';
+    return 'Om Namah. '+bData.devoteeName+' avargalukku. '+bData.archanaType+' confirmed. Govinda.';
+}
+
+function showScript(text,l) {
+    var s=document.getElementById('sBox'); if(!s) return;
+    s.style.display='block';
+    s.innerHTML='<div class="slabel">'+(l==='tamil'?'🐟 Tamil Archana Script:':'🐟 English Archana Script:')+'</div>'+text;
+}
+function appendDone() {
+    var s=document.getElementById('sBox');
+    if(s) s.innerHTML+='<div class="sdone">🙏 Archana completed. Sarva Mangala Prapthirastu. Om Shanti.</div>';
+}
+function setAS(state,msg) {
+    var d=document.getElementById('aDot'), t=document.getElementById('aTxt');
+    if(d) d.className='a-dot '+state;
+    if(t) t.textContent=msg;
+}
+function resetBtns() {
+    var m={'btnGTamil':'🐟 Fish AI Tamil Priest Voice','btnGEng':'🐟 Fish AI English Priest Voice','btnValluvar':'🔔 Bell + 🎙️ Tamil Valluvar','btnEngFull':'🔔 Bell + 🎙️ English Priest'};
+    Object.keys(m).forEach(function(id){var b=document.getElementById(id);if(b){b.disabled=false;b.textContent=m[id];}});
+}
+
+function startCam() {
+    showSt('Starting camera...','info');
+    if(typeof ZXing==='undefined'||!ZXing.BrowserQRCodeReader){showSt('QR library not loaded. Use manual entry or refresh.','err');return;}
+    navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
+        .then(function(stream){
+            stream.getTracks().forEach(function(t){t.stop();});
+            try {
+                camScanner=new ZXing.BrowserQRCodeReader();
+                document.getElementById('btnStart').style.display='none';
+                document.getElementById('btnStop').style.display='flex';
+                camScanner.decodeFromVideoDevice(null,document.getElementById('camVideo'),function(result){
+                    if(result){var id=extractID(result.getText());document.getElementById('bidInput').value=id;stopCam();verifyAPI(id);}
+                });
+                showSt('Camera ready. Point at QR code.','ok');
+            } catch(e) {
+                document.getElementById('btnStart').style.display='flex';
+                document.getElementById('btnStop').style.display='none';
+                showSt('Camera error: '+e.message,'err');
+            }
+        })
+        .catch(function(e){showSt('Camera permission denied: '+e.message,'err');});
+}
+function stopCam() {
+    if(camScanner){try{camScanner.reset();}catch(e){}camScanner=null;}
+    document.getElementById('btnStart').style.display='flex';
+    document.getElementById('btnStop').style.display='none';
+    showSt('Camera stopped.','info');
+}
+function extractID(text) {
+    var lines=text.split('\n');
+    for(var i=0;i<lines.length;i++){if(lines[i].indexOf('BookingID:')!==-1)return lines[i].replace('BookingID:','').trim();}
+    var t=text.trim();
+    return t.indexOf('TEMPLE-')===0?t.split('\n')[0]:t;
+}
+</script>
+</body>
+</html>

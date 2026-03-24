@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment | Temple Archana</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/booking.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script th:src="@{/js/animations.js}"></script>
+</head>
+<body>
+
+<header class="temple-header">
+    <div class="header-content">
+        <div class="temple-logo">🛕</div>
+        <h1>Payment</h1>
+    </div>
+</header>
+
+<nav class="main-nav">
+    <a href="/">🏠 Home</a>
+    <a href="/booking">📿 Book Archana</a>
+</nav>
+
+<main class="booking-container">
+    <div class="payment-box">
+
+        <!-- ORDER SUMMARY -->
+        <div class="order-summary">
+            <h2>📋 Order Summary</h2>
+            <table class="summary-table">
+                <tr>
+                    <td>👤 Devotee Name</td>
+                    <td><strong th:text="${name}"></strong></td>
+                </tr>
+                <tr>
+                    <td>🌙 Raasi</td>
+                    <td th:text="${raasi}"></td>
+                </tr>
+                <tr>
+                    <td>⭐ Nakshatram</td>
+                    <td th:text="${nakshatram}"></td>
+                </tr>
+                <tr>
+                    <td>📱 Phone</td>
+                    <td th:text="${phone}"></td>
+                </tr>
+                <tr>
+                    <td>🌸 Archana Type</td>
+                    <td th:text="${archanaType}"></td>
+                </tr>
+                <tr>
+                    <td>⏰ Time Slot</td>
+                    <td th:text="${timeSlot}"></td>
+                </tr>
+                <tr class="amount-row">
+                    <td>💰 Amount</td>
+                    <td><strong>₹<span th:text="${amount}"></span></strong></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- PAYMENT FORM (Demo Simulation) -->
+        <div class="payment-section">
+            <h2>💳 Demo Payment</h2>
+            <p class="payment-note">⚠️ This is a DEMO payment for Final Year Project</p>
+
+            <div class="payment-methods">
+                <button class="pay-method active" onclick="selectMethod('upi')">📱 UPI</button>
+                <button class="pay-method" onclick="selectMethod('card')">💳 Card</button>
+                <button class="pay-method" onclick="selectMethod('netbanking')">🏦 Net Banking</button>
+            </div>
+
+            <!-- UPI Section -->
+            <div id="upi-section" class="payment-input-section">
+                <input type="text" placeholder="Enter UPI ID (e.g., name@upi)"
+                       id="upiId" value="devotee@paytm">
+                <p class="demo-hint">💡 Demo: Any UPI ID works for testing</p>
+            </div>
+
+            <!-- CONFIRM FORM — ✅ FIXED: gothram → raasi -->
+            <form action="/booking/confirm" method="post" id="confirmForm">
+                <input type="hidden" name="name"        th:value="${name}">
+                <input type="hidden" name="raasi"       th:value="${raasi}">
+                <input type="hidden" name="nakshatram"  th:value="${nakshatram}">
+                <input type="hidden" name="phone"       th:value="${phone}">
+                <input type="hidden" name="email"       th:value="${email}">
+                <input type="hidden" name="archanaType" th:value="${archanaType}">
+                <input type="hidden" name="timeSlot"    th:value="${timeSlot}">
+            </form>
+
+            <!-- PAY BUTTON -->
+            <button class="btn-pay" onclick="processPayment()">
+                🔒 Pay ₹<span th:text="${amount}"></span> Now
+            </button>
+
+            <!-- PROCESSING ANIMATION -->
+            <div id="paymentProcessing" style="display:none;" class="processing">
+                <div class="spinner"></div>
+                <p>Processing payment... Please wait...</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    function selectMethod(method) {
+        document.querySelectorAll('.pay-method').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function processPayment() {
+        const upiId = document.getElementById('upiId').value;
+        if (!upiId) {
+            alert('Please enter UPI ID');
+            return;
+        }
+
+        // Show processing animation
+        document.querySelector('.btn-pay').style.display = 'none';
+        document.getElementById('paymentProcessing').style.display = 'flex';
+
+        // Simulate 2 second payment processing
+        setTimeout(function() {
+            document.getElementById('confirmForm').submit();
+        }, 2000);
+    }
+</script>
+
+<footer class="temple-footer">
+    <p>🛕 Sri Venkateswara Temple | Smart Archana System</p>
+</footer>
+
+</body>
+</html>

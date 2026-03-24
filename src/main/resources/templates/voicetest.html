@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Temple Voice Finder</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #0d0d1a;
+            color: #FFD700;
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        h1 {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 0.3rem;
+            color: #FFD700;
+        }
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #B8860B;
+            border-radius: 14px;
+            padding: 1.5rem;
+            max-width: 700px;
+            margin: 0 auto 1.5rem;
+        }
+        .card h3 {
+            color: #FFD700;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            border-bottom: 1px solid #B8860B;
+            padding-bottom: 0.5rem;
+        }
+        label {
+            display: block;
+            font-size: 0.82rem;
+            color: #ccc;
+            margin-bottom: 0.3rem;
+            margin-top: 0.75rem;
+        }
+        input[type=text], select, textarea {
+            width: 100%;
+            padding: 0.7rem 0.9rem;
+            background: #0d0d1a;
+            border: 1px solid #B8860B;
+            border-radius: 8px;
+            color: #FFD700;
+            font-size: 0.9rem;
+            font-family: Arial, sans-serif;
+        }
+        textarea { height: 100px; resize: vertical; }
+        .row { display: flex; gap: 1rem; }
+        .row > div { flex: 1; }
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 0.3rem;
+        }
+        input[type=range] {
+            flex: 1;
+            accent-color: #FFD700;
+        }
+        .slider-val {
+            min-width: 35px;
+            text-align: right;
+            font-size: 0.88rem;
+            color: #FFD700;
+        }
+        .btn {
+            width: 100%;
+            padding: 0.9rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.85; }
+        .btn-play {
+            background: linear-gradient(135deg, #8B0000, #B22222);
+            color: #FFD700;
+            border: 2px solid #FFD700;
+        }
+        .btn-stop {
+            background: #450a0a;
+            color: #fca5a5;
+            border: 1px solid #7f1d1d;
+        }
+        .btn-test-all {
+            background: linear-gradient(135deg, #1a4a3a, #1a9e75);
+            color: white;
+        }
+        .voice-list {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 0.75rem;
+        }
+        .voice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 4px;
+            background: #0d0d1a;
+            border: 1px solid #333;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .voice-item:hover { border-color: #B8860B; }
+        .voice-item.selected {
+            border-color: #FFD700;
+            background: #1a1a00;
+        }
+        .voice-item .v-name {
+            font-size: 0.83rem;
+            color: #FFD700;
+        }
+        .voice-item .v-lang {
+            font-size: 0.75rem;
+            color: #888;
+        }
+        .voice-item .btn-try {
+            padding: 0.3rem 0.75rem;
+            background: #8B0000;
+            color: #FFD700;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .output-box {
+            background: #07070f;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-size: 0.82rem;
+            color: #ffe066;
+            font-style: italic;
+            line-height: 1.8;
+            min-height: 60px;
+        }
+        .playing-badge {
+            display: inline-block;
+            background: #FFD700;
+            color: #1a1a2e;
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-left: 0.5rem;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%,100% { opacity:1; }
+            50%      { opacity:0.4; }
+        }
+        .best-badge {
+            background: #16a34a;
+            color: white;
+            padding: 0.15rem 0.6rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-left: 0.4rem;
+        }
+        .tip-box {
+            background: #0a2a1a;
+            border: 1px solid #16a34a;
+            border-radius: 8px;
+            padding: 0.85rem 1rem;
+            font-size: 0.82rem;
+            color: #86efac;
+            margin-top: 1rem;
+            line-height: 1.7;
+        }
+        #voiceCount {
+            color: #888;
+            font-size: 0.78rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🛕 Temple Voice Finder</h1>
+<p class="subtitle">
+    Find the best priest voice on your computer
+</p>
+
+<!-- CARD 1: All Voices -->
+<div class="card">
+    <h3>📋 All Available Voices on Your Computer</h3>
+    <p id="voiceCount">Loading voices...</p>
+
+    <div class="voice-list" id="voiceList">
+        <p style="color:#888; font-size:0.85rem;">
+            Click "Load Voices" button below
+        </p>
+    </div>
+
+    <button class="btn btn-test-all" onclick="loadAllVoices()">
+        🔄 Load / Refresh Voice List
+    </button>
+
+    <div class="tip-box" id="tipBox" style="display:none;">
+        💡 <strong>Best voices for temple priest effect:</strong><br>
+        1. <strong>en-IN voices</strong> (Indian English) — closest to South Indian accent<br>
+        2. <strong>Google UK English Male</strong> — deep formal voice<br>
+        3. <strong>Microsoft David</strong> — available on Windows<br>
+        4. Any <strong>Male</strong> voice with slow rate
+    </div>
+</div>
+
+<!-- CARD 2: Voice Tuner -->
+<div class="card">
+    <h3>🎛️ Voice Tuner — Adjust Settings</h3>
+
+    <div class="row">
+        <div>
+            <label>Devotee Name</label>
+            <input type="text" id="t-name" value="Ramesh Kumar">
+        </div>
+        <div>
+            <label>Archana Type</label>
+            <select id="t-archana">
+                <option>Pushparchana</option>
+                <option>Kumkumarchana</option>
+                <option>Abhishekam</option>
+                <option>Sahasranamam</option>
+                <option>Ganapathi Homam</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row">
+        <div>
+            <label>Gothram</label>
+            <input type="text" id="t-gothram" value="Kashyapa">
+        </div>
+        <div>
+            <label>Nakshatram</label>
+            <input type="text" id="t-naksha" value="Rohini">
+        </div>
+    </div>
+
+    <!-- Sliders -->
+    <label>
+        Speed (Rate) — Lower = Slower = More priestly
+    </label>
+    <div class="slider-row">
+        <span style="font-size:0.75rem; color:#888;">Fast</span>
+        <input type="range" id="rateSlider"
+               min="0.3" max="1.5" step="0.05" value="0.65"
+               oninput="document.getElementById('rateVal')
+                        .textContent=this.value">
+        <span style="font-size:0.75rem; color:#888;">Slow</span>
+        <span class="slider-val" id="rateVal">0.65</span>
+    </div>
+
+    <label>
+        Depth (Pitch) — Lower = Deeper = More masculine
+    </label>
+    <div class="slider-row">
+        <span style="font-size:0.75rem; color:#888;">High</span>
+        <input type="range" id="pitchSlider"
+               min="0.1" max="2.0" step="0.1" value="0.70"
+               oninput="document.getElementById('pitchVal')
+                        .textContent=this.value">
+        <span style="font-size:0.75rem; color:#888;">Low</span>
+        <span class="slider-val" id="pitchVal">0.70</span>
+    </div>
+
+    <label>Volume</label>
+    <div class="slider-row">
+        <span style="font-size:0.75rem; color:#888;">Low</span>
+        <input type="range" id="volSlider"
+               min="0.1" max="1.0" step="0.1" value="1.0"
+               oninput="document.getElementById('volVal')
+                        .textContent=this.value">
+        <span style="font-size:0.75rem; color:#888;">High</span>
+        <span class="slider-val" id="volVal">1.0</span>
+    </div>
+
+    <!-- Selected voice display -->
+    <label>Currently Selected Voice</label>
+    <div style="background:#0d0d1a; border:1px solid #B8860B;
+                border-radius:8px; padding:0.6rem 0.9rem;
+                font-size:0.85rem; color:#FFD700;" id="selectedVoiceDisplay">
+        None selected — click a voice above to select it
+    </div>
+
+    <button class="btn btn-play" onclick="testCurrentVoice()">
+        🎙️ Test With Current Settings
+    </button>
+
+    <button class="btn btn-stop" onclick="stopVoice()">
+        ⏹️ Stop Voice
+    </button>
+
+    <div class="output-box" id="outputBox">
+        Voice output will appear here...
+    </div>
+</div>
+
+<!-- CARD 3: Best Settings for Viva -->
+<div class="card">
+    <h3>🏆 Recommended Settings for Viva Demo</h3>
+
+    <div style="display:flex; flex-direction:column; gap:8px;">
+
+        <button class="btn btn-play"
+                onclick="applyPreset(0.60, 0.70, 'en-IN')">
+            🇮🇳 Preset 1: Indian English (Rate 0.60, Pitch 0.70)
+        </button>
+
+        <button class="btn btn-play"
+                onclick="applyPreset(0.55, 0.65, 'en-GB')">
+            🇬🇧 Preset 2: UK Male Deep (Rate 0.55, Pitch 0.65)
+        </button>
+
+        <button class="btn btn-play"
+                onclick="applyPreset(0.65, 0.80, 'en-US')">
+            🇺🇸 Preset 3: US English (Rate 0.65, Pitch 0.80)
+        </button>
+
+        <button class="btn btn-play"
+                onclick="applyPreset(0.50, 0.60, null)">
+            🧘 Preset 4: Very Slow Deep (Rate 0.50, Pitch 0.60)
+        </button>
+
+    </div>
+
+    <div class="tip-box" style="margin-top:1rem;">
+        <strong>After finding the best voice:</strong><br>
+        1. Note the <strong>voice name</strong> and <strong>rate/pitch values</strong><br>
+        2. Go back to Eclipse<br>
+        3. Open <code>scanner.html</code><br>
+        4. Find the <code>speakArchana</code> function<br>
+        5. Update <code>utterance.rate</code> and
+           <code>utterance.pitch</code> values<br>
+        6. Update the <code>findBestVoice</code> function to
+           match your preferred voice name
+    </div>
+</div>
+
+<script>
+    var allVoices       = [];
+    var selectedVoiceIdx = -1;
+
+    // Load all voices into the list
+    function loadAllVoices() {
+        allVoices = window.speechSynthesis.getVoices();
+
+        if (allVoices.length === 0) {
+            // Chrome loads voices async
+            window.speechSynthesis.onvoiceschanged = function() {
+                allVoices = window.speechSynthesis.getVoices();
+                renderVoiceList();
+            };
+            document.getElementById('voiceCount').textContent =
+                'Loading... please wait';
+            // Trigger loading
+            window.speechSynthesis.speak(
+                new SpeechSynthesisUtterance('')
+            );
+            window.speechSynthesis.cancel();
+            return;
+        }
+        renderVoiceList();
+    }
+
+    function renderVoiceList() {
+        var list = document.getElementById('voiceList');
+        var count = document.getElementById('voiceCount');
+
+        count.textContent = allVoices.length +
+            ' voices found on your computer';
+
+        if (allVoices.length === 0) {
+            list.innerHTML =
+                '<p style="color:#ef4444;">No voices found. ' +
+                'Try Chrome browser.</p>';
+            return;
+        }
+
+        // Sort: en-IN first, then en-GB, then en-US, then others
+        var sorted = allVoices.slice().sort(function(a, b) {
+            var score = function(v) {
+                if (v.lang === 'en-IN') return 0;
+                if (v.lang === 'en-GB') return 1;
+                if (v.lang === 'en-US') return 2;
+                if (v.lang.startsWith('en')) return 3;
+                return 4;
+            };
+            return score(a) - score(b);
+        });
+
+        var html = '';
+        sorted.forEach(function(voice, i) {
+            var origIdx = allVoices.indexOf(voice);
+            var isBest  = voice.lang === 'en-IN' ||
+                          voice.name.indexOf('UK English Male') !== -1 ||
+                          voice.name.indexOf('David') !== -1;
+            var isIndia = voice.lang === 'en-IN';
+
+            html +=
+                '<div class="voice-item" id="vi-' + origIdx + '" ' +
+                'onclick="selectVoice(' + origIdx + ')">' +
+
+                '<div>' +
+                '<div class="v-name">' + voice.name +
+                (isBest ? '<span class="best-badge">⭐ Best</span>' : '') +
+                '</div>' +
+                '<div class="v-lang">' + voice.lang +
+                (voice.localService ? ' · Local' : ' · Online') +
+                '</div>' +
+                '</div>' +
+
+                '<button class="btn-try" onclick="event.stopPropagation(); ' +
+                'tryVoice(' + origIdx + ')">▶ Try</button>' +
+                '</div>';
+        });
+
+        list.innerHTML = html;
+        document.getElementById('tipBox').style.display = 'block';
+    }
+
+    function selectVoice(idx) {
+        // Remove previous selection
+        document.querySelectorAll('.voice-item').forEach(function(el) {
+            el.classList.remove('selected');
+        });
+
+        selectedVoiceIdx = idx;
+        var el = document.getElementById('vi-' + idx);
+        if (el) el.classList.add('selected');
+
+        var v = allVoices[idx];
+        document.getElementById('selectedVoiceDisplay').textContent =
+            v.name + ' (' + v.lang + ')';
+
+        console.log('Selected voice:', v.name, v.lang);
+    }
+
+    function tryVoice(idx) {
+        selectVoice(idx);
+
+        var voice  = allVoices[idx];
+        var sample =
+            'Om Namah. ' +
+            document.getElementById('t-name').value +
+            ' avargalukku. ' +
+            document.getElementById('t-gothram').value +
+            ' gothram. Sarva Mangala Prapthirastu. Govinda.';
+
+        var utt    = new SpeechSynthesisUtterance(sample);
+        utt.voice  = voice;
+        utt.rate   = parseFloat(
+            document.getElementById('rateSlider').value
+        );
+        utt.pitch  = parseFloat(
+            document.getElementById('pitchSlider').value
+        );
+        utt.volume = parseFloat(
+            document.getElementById('volSlider').value
+        );
+
+        window.speechSynthesis.cancel();
+
+        var output = document.getElementById('outputBox');
+        output.innerHTML = 'Playing: <strong>' + voice.name +
+            '</strong><span class="playing-badge">PLAYING</span>' +
+            '<br><br><em>' + sample + '</em>';
+
+        utt.onend = function() {
+            output.innerHTML =
+                '✅ Done: <strong>' + voice.name + '</strong><br>' +
+                '<em>' + sample + '</em>';
+        };
+
+        window.speechSynthesis.speak(utt);
+    }
+
+    function testCurrentVoice() {
+        var name    = document.getElementById('t-name').value;
+        var gothram = document.getElementById('t-gothram').value;
+        var naksha  = document.getElementById('t-naksha').value;
+        var archana = document.getElementById('t-archana').value;
+        var rate    = parseFloat(document.getElementById('rateSlider').value);
+        var pitch   = parseFloat(document.getElementById('pitchSlider').value);
+        var vol     = parseFloat(document.getElementById('volSlider').value);
+
+        var text =
+            'Om............... ' +
+            'Shubham Karoti Kalyanam. ' +
+            'Arogyam. Dhana. Sampada.............. ' +
+            name    + ' avargalukku................. ' +
+            gothram + ' gothram.................. ' +
+            naksha  + ' nakshatram.................. ' +
+            archana + ' samarpanam................... ' +
+            'Sarva Mangala Prapthirastu................. ' +
+            'Om Shanti. Shanti. Shantihi............... ' +
+            'Jai Sri Venkateswara. ' +
+            'Govinda. Govinda. Govinda';
+
+        var utt    = new SpeechSynthesisUtterance(text);
+        utt.rate   = rate;
+        utt.pitch  = pitch;
+        utt.volume = vol;
+
+        // Use selected voice if any
+        if (selectedVoiceIdx >= 0 && allVoices[selectedVoiceIdx]) {
+            utt.voice = allVoices[selectedVoiceIdx];
+        } else {
+            // Auto-pick best
+            var best =
+                allVoices.find(function(v) {
+                    return v.lang === 'en-IN';
+                }) ||
+                allVoices.find(function(v) {
+                    return v.name.indexOf('UK English Male') !== -1;
+                }) ||
+                allVoices.find(function(v) {
+                    return v.lang.startsWith('en');
+                });
+            if (best) utt.voice = best;
+        }
+
+        window.speechSynthesis.cancel();
+
+        var voiceName = utt.voice ? utt.voice.name : 'Default';
+        var output    = document.getElementById('outputBox');
+        output.innerHTML =
+            'Playing with: <strong>' + voiceName +
+            '</strong> | Rate: <strong>' + rate +
+            '</strong> | Pitch: <strong>' + pitch +
+            '</strong><span class="playing-badge">PLAYING</span>';
+
+        utt.onend = function() {
+            output.innerHTML +=
+                '<br><br>✅ Done! Rate: ' + rate +
+                ' | Pitch: ' + pitch +
+                ' | Voice: ' + voiceName;
+        };
+
+        window.speechSynthesis.speak(utt);
+    }
+
+    function applyPreset(rate, pitch, lang) {
+        document.getElementById('rateSlider').value = rate;
+        document.getElementById('pitchSlider').value = pitch;
+        document.getElementById('rateVal').textContent = rate;
+        document.getElementById('pitchVal').textContent = pitch;
+
+        // Select matching voice
+        if (lang) {
+            var match = allVoices.findIndex(function(v) {
+                return v.lang === lang || v.lang.startsWith(lang);
+            });
+            if (match >= 0) selectVoice(match);
+        }
+
+        testCurrentVoice();
+    }
+
+    function stopVoice() {
+        window.speechSynthesis.cancel();
+        document.getElementById('outputBox').textContent =
+            'Voice stopped.';
+    }
+
+    // Auto-load on page open
+    window.addEventListener('load', function() {
+        setTimeout(loadAllVoices, 300);
+    });
+</script>
+
+</body>
+</html>

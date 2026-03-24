@@ -1,0 +1,535 @@
+/* ============================================================
+   BOOKING & PAYMENT & TICKET STYLES
+   ============================================================ */
+
+/* ── BOOKING FORM ──────────────────────────────────────────── */
+.booking-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.booking-form-box {
+    background: white;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+    border-top: 5px solid #8B0000;
+}
+
+.booking-form-box h2 {
+    color: #8B0000;
+    font-family: 'Cinzel', serif;
+    font-size: 1.8rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 2rem;
+}
+
+.form-section {
+    background: #fef9f0;
+    border: 1px solid #f0d9a0;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-section h3 {
+    color: #8B0000;
+    margin-bottom: 1.25rem;
+    font-size: 1.1rem;
+    border-bottom: 2px solid #f0d9a0;
+    padding-bottom: 0.5rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #444;
+    margin-bottom: 0.4rem;
+    font-size: 0.9rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e0c9a0;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: #8B0000;
+    box-shadow: 0 0 0 3px rgba(139,0,0,0.1);
+}
+
+/* ── ARCHANA OPTIONS ───────────────────────────────────────── */
+.archana-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.archana-option {
+    cursor: pointer;
+}
+
+.archana-option input[type="radio"] {
+    display: none;
+}
+
+.option-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.85rem;
+    border: 2px solid #e0c9a0;
+    border-radius: 10px;
+    background: white;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.option-box:hover {
+    border-color: #8B0000;
+    background: #fef9f0;
+}
+
+.archana-option input:checked + .option-box,
+.option-box.selected {
+    border-color: #8B0000;
+    background: #8B0000;
+    color: white;
+}
+
+.archana-option input:checked + .option-box .option-name,
+.option-box.selected .option-name {
+    color: white;
+}
+
+.archana-option input:checked + .option-box .option-price,
+.option-box.selected .option-price {
+    color: #FFD700;
+}
+
+.option-name {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-align: center;
+    color: #333;
+}
+
+.option-price {
+    font-weight: 700;
+    font-size: 1rem;
+    color: #8B0000;
+    margin-top: 0.25rem;
+}
+
+/* ── AMOUNT DISPLAY ────────────────────────────────────────── */
+.amount-display {
+    background: linear-gradient(135deg, #8B0000, #B8860B);
+    color: white;
+    text-align: center;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.amount-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #FFD700;
+}
+
+/* ── SUBMIT BUTTON ─────────────────────────────────────────── */
+.btn-submit {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #8B0000, #B22222);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(139,0,0,0.4);
+}
+
+/* ── PAYMENT PAGE ──────────────────────────────────────────── */
+.payment-box {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.1);
+    max-width: 700px;
+    margin: 2rem auto;
+}
+
+.order-summary {
+    background: #fef9f0;
+    padding: 2rem;
+    border-bottom: 3px solid #B8860B;
+}
+
+.order-summary h2 {
+    color: #8B0000;
+    margin-bottom: 1rem;
+}
+
+.summary-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.summary-table td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid #f0d9a0;
+}
+
+.summary-table td:first-child {
+    color: #666;
+    font-size: 0.9rem;
+    width: 40%;
+}
+
+.amount-row td {
+    font-size: 1.1rem;
+    color: #8B0000;
+    border-top: 2px solid #B8860B;
+    padding-top: 1rem;
+}
+
+.payment-section {
+    padding: 2rem;
+}
+
+.payment-section h2 {
+    color: #333;
+    margin-bottom: 0.5rem;
+}
+
+.payment-note {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+}
+
+.payment-methods {
+    display: flex;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.pay-method {
+    flex: 1;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.pay-method.active {
+    border-color: #8B0000;
+    background: #fef9f0;
+    color: #8B0000;
+    font-weight: 600;
+}
+
+.payment-input-section input {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.demo-hint {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 1rem;
+}
+
+.btn-pay {
+    width: 100%;
+    padding: 1rem;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-pay:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22,163,74,0.4);
+}
+
+.processing {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1rem;
+    color: #666;
+}
+
+/* ── TICKET ────────────────────────────────────────────────── */
+.ticket-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.success-banner {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+}
+
+.success-icon {
+    font-size: 3rem;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.ticket-card {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.15);
+    border: 3px solid #B8860B;
+    margin-bottom: 1.5rem;
+}
+
+.ticket-header {
+    background: linear-gradient(135deg, #8B0000, #B8860B);
+    color: white;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.ticket-header h2 {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+}
+
+.ticket-body {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+}
+
+.ticket-details {
+    flex: 1;
+}
+
+.ticket-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed #f0d9a0;
+}
+
+.ticket-row .label {
+    color: #666;
+    font-size: 0.85rem;
+    width: 40%;
+}
+
+.ticket-row .value {
+    font-weight: 600;
+    color: #333;
+    text-align: right;
+}
+
+.ticket-row .highlight {
+    color: #8B0000;
+}
+
+.booking-id {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #8B0000;
+}
+
+.amount-paid {
+    color: #16a34a;
+    font-size: 1.1rem;
+}
+
+.status-badge {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 0.2rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+}
+
+.ticket-qr {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 180px;
+    background: #fef9f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px dashed #B8860B;
+}
+
+.ticket-qr p {
+    font-weight: 600;
+    color: #8B0000;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+}
+
+.qr-image {
+    width: 150px;
+    height: 150px;
+    border: 3px solid #8B0000;
+    border-radius: 8px;
+}
+
+.qr-hint {
+    font-size: 0.75rem;
+    color: #666;
+    margin-top: 0.5rem;
+    text-align: center;
+}
+
+.ticket-footer {
+    background: #fef9f0;
+    text-align: center;
+    padding: 1rem;
+    border-top: 2px solid #f0d9a0;
+    color: #8B0000;
+    font-size: 0.9rem;
+}
+
+.ticket-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+}
+
+.btn-print, .btn-secondary {
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    font-size: 0.95rem;
+}
+
+.btn-print {
+    background: #8B0000;
+    color: white;
+    border: none;
+}
+
+.btn-secondary {
+    background: white;
+    color: #8B0000;
+    border: 2px solid #8B0000;
+}
+
+/* ── VOICE SECTION ─────────────────────────────────────────── */
+.voice-section {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    color: white;
+    text-align: center;
+    padding: 2.5rem;
+    border-radius: 16px;
+    margin-top: 1rem;
+}
+
+.voice-section h3 {
+    color: #FFD700;
+    margin-bottom: 0.5rem;
+}
+
+.voice-section p {
+    opacity: 0.8;
+    margin-bottom: 1.5rem;
+}
+
+.btn-voice {
+    background: linear-gradient(135deg, #FFD700, #B8860B);
+    color: #1a1a2e;
+    padding: 1rem 2.5rem;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-voice:hover {
+    transform: scale(1.05);
+}
+
+.voice-text-display {
+    margin-top: 1.5rem;
+    background: rgba(255,255,255,0.1);
+    padding: 1rem;
+    border-radius: 10px;
+    font-style: italic;
+    line-height: 1.8;
+}
+
+@media print {
+    header, nav, .ticket-actions, .voice-section, footer { display: none; }
+    .ticket-card { box-shadow: none; border: 2px solid #333; }
+}
+
+@media (max-width: 600px) {
+    .ticket-body { flex-direction: column; }
+    .form-row { grid-template-columns: 1fr; }
+}

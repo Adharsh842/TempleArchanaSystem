@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛕 Sri Venkateswara Temple | Divine Archana Booking</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=Tiro+Devanagari+Sanskrit:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script th:src="@{/js/animations.js}"></script>
+    <style>
+        :root {
+            --saffron:    #FF6B00;
+            --saffron2:   #FF9500;
+            --gold:       #FFD700;
+            --gold2:      #FFA500;
+            --crimson:    #C0392B;
+            --deep-red:   #8B0000;
+            --rose:       #E91E63;
+            --teal:       #00897B;
+            --indigo:     #3949AB;
+            --purple:     #7B1FA2;
+            --cream:      #FFF8E7;
+            --dark:       #1A0A00;
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--dark);
+            color: var(--cream);
+            overflow-x: hidden;
+        }
+
+        /* ── NOISE TEXTURE OVERLAY ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.4;
+        }
+
+        /* ── NAV ── */
+        .nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2.5rem;
+            background: rgba(26,10,0,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,165,0,0.2);
+            transition: all 0.3s;
+        }
+        .nav-brand {
+            font-family: 'Yatra One', cursive;
+            font-size: 1.3rem;
+            color: var(--gold);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .nav-links {
+            display: flex;
+            gap: 0.25rem;
+            align-items: center;
+        }
+        .nav-links a {
+            color: rgba(255,248,231,0.75);
+            text-decoration: none;
+            padding: 0.45rem 0.9rem;
+            border-radius: 50px;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            color: var(--gold);
+            background: rgba(255,165,0,0.12);
+        }
+        .nav-links .nav-cta {
+            background: linear-gradient(135deg, var(--saffron), var(--gold2));
+            color: var(--dark) !important;
+            font-weight: 700;
+            padding: 0.5rem 1.2rem;
+        }
+        .nav-links .nav-cta:hover {
+            background: linear-gradient(135deg, var(--gold2), var(--gold));
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(255,107,0,0.4);
+        }
+
+        /* ── HERO ── */
+        .hero {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Animated gradient background */
+        .hero-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 40%, rgba(255,107,0,0.25) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 60%, rgba(192,57,43,0.2) 0%, transparent 60%),
+                radial-gradient(ellipse 100% 100% at 50% 100%, rgba(123,31,162,0.15) 0%, transparent 50%),
+                linear-gradient(180deg, #1A0A00 0%, #2D0800 50%, #1A0A00 100%);
+            animation: heroShift 8s ease-in-out infinite alternate;
+        }
+        @keyframes heroShift {
+            0%   { filter: hue-rotate(0deg) brightness(1); }
+            100% { filter: hue-rotate(15deg) brightness(1.1); }
+        }
+
+        /* Floating mandalas */
+        .mandala {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(255,215,0,0.08);
+            animation: spin linear infinite;
+        }
+        .mandala::before {
+            content: '';
+            position: absolute;
+            inset: 10%;
+            border-radius: 50%;
+            border: 1px solid rgba(255,107,0,0.1);
+        }
+        .mandala::after {
+            content: '';
+            position: absolute;
+            inset: 25%;
+            border-radius: 50%;
+            border: 1px solid rgba(255,215,0,0.12);
+        }
+        .m1 { width: 600px; height: 600px; top: -150px; right: -150px; animation-duration: 40s; }
+        .m2 { width: 400px; height: 400px; bottom: -100px; left: -100px; animation-duration: 30s; animation-direction: reverse; }
+        .m3 { width: 200px; height: 200px; top: 30%; left: 10%; animation-duration: 20s; opacity: 0.5; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Floating particles */
+        .particles {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .particle {
+            position: absolute;
+            width: 4px; height: 4px;
+            border-radius: 50%;
+            background: var(--gold);
+            animation: float linear infinite;
+            opacity: 0;
+        }
+        @keyframes float {
+            0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+            10%  { opacity: 0.8; }
+            90%  { opacity: 0.4; }
+            100% { transform: translateY(-10vh) scale(1.5); opacity: 0; }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 2rem;
+            max-width: 900px;
+            animation: heroIn 1s ease both;
+        }
+        @keyframes heroIn {
+            from { opacity: 0; transform: translateY(40px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .hero-om {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: omPulse 3s ease-in-out infinite;
+        }
+        @keyframes omPulse {
+            0%,100% { text-shadow: 0 0 30px rgba(255,215,0,0.5), 0 0 60px rgba(255,107,0,0.3); transform: scale(1); }
+            50%      { text-shadow: 0 0 60px rgba(255,215,0,0.9), 0 0 120px rgba(255,107,0,0.5); transform: scale(1.05); }
+        }
+
+        .hero-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(255,107,0,0.2), rgba(255,215,0,0.1));
+            border: 1px solid rgba(255,165,0,0.3);
+            border-radius: 50px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.8rem;
+            color: var(--gold2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .hero-title {
+            font-family: 'Yatra One', cursive;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #FFD700, #FF9500, #FF6B00, #FFD700);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 4s linear infinite;
+        }
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        .hero-sub {
+            font-size: 1.15rem;
+            color: rgba(255,248,231,0.65);
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        .hero-btns {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            padding: 0.9rem 2.2rem;
+            background: linear-gradient(135deg, var(--saffron), var(--gold2));
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 30px rgba(255,107,0,0.4);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 40px rgba(255,107,0,0.6);
+        }
+
+        .btn-secondary {
+            padding: 0.9rem 2.2rem;
+            background: rgba(255,215,0,0.08);
+            color: var(--gold);
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: 1px solid rgba(255,215,0,0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255,215,0,0.15);
+            border-color: var(--gold);
+            transform: translateY(-3px);
+        }
+
+        /* ── STATS BAR ── */
+        .stats-bar {
+            position: relative;
+            z-index: 2;
+            background: rgba(255,255,255,0.03);
+            border-top: 1px solid rgba(255,165,0,0.15);
+            border-bottom: 1px solid rgba(255,165,0,0.15);
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            flex-wrap: wrap;
+        }
+        .stat {
+            text-align: center;
+            animation: fadeUp 0.8s ease both;
+        }
+        .stat:nth-child(2) { animation-delay: 0.1s; }
+        .stat:nth-child(3) { animation-delay: 0.2s; }
+        .stat:nth-child(4) { animation-delay: 0.3s; }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .stat-num {
+            font-family: 'Yatra One', cursive;
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--gold), var(--saffron));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .stat-label {
+            font-size: 0.78rem;
+            color: rgba(255,248,231,0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0.2rem;
+        }
+
+        /* ── SECTION COMMON ── */
+        section {
+            position: relative;
+            z-index: 1;
+            padding: 5rem 2rem;
+        }
+
+        .section-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(255,107,0,0.1);
+            border: 1px solid rgba(255,107,0,0.25);
+            border-radius: 50px;
+            padding: 0.35rem 1rem;
+            font-size: 0.75rem;
+            color: var(--saffron2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-family: 'Yatra One', cursive;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            background: linear-gradient(135deg, var(--gold), var(--saffron2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+        }
+
+        .section-sub {
+            color: rgba(255,248,231,0.5);
+            font-size: 1rem;
+            max-width: 500px;
+            line-height: 1.7;
+        }
+
+        /* ── HOW IT WORKS ── */
+        .how-section {
+            background: linear-gradient(180deg, transparent, rgba(255,107,0,0.04), transparent);
+        }
+        .how-section .inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        .step-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,165,0,0.1);
+            border-radius: 20px;
+            padding: 2rem 1.5rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.35s;
+            cursor: default;
+        }
+        .step-card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,107,0,0.08), rgba(255,215,0,0.04));
+            opacity: 0;
+            transition: opacity 0.35s;
+        }
+        .step-card:hover { transform: translateY(-6px); border-color: rgba(255,165,0,0.35); }
+        .step-card:hover::before { opacity: 1; }
+        .step-num {
+            position: absolute;
+            top: 1rem; right: 1.2rem;
+            font-family: 'Yatra One', cursive;
+            font-size: 3rem;
+            color: rgba(255,165,0,0.06);
+            line-height: 1;
+        }
+        .step-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .step-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gold2);
+            margin-bottom: 0.5rem;
+        }
+        .step-card p {
+            font-size: 0.85rem;
+            color: rgba(255,248,231,0.5);
+            line-height: 1.6;
+        }
+        /* Connector line between steps */
+        .steps-grid { position: relative; }
+
+        /* ── ARCHANA CARDS ── */
+        .archana-section .inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .archana-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 1.2rem;
+            margin-top: 3rem;
+        }
+        .archana-card {
+            border-radius: 20px;
+            padding: 1.8rem 1.2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.35s;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .archana-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: rgba(255,255,255,0.05);
+        }
+        .archana-card:hover { transform: translateY(-8px) scale(1.02); }
+        .archana-card:hover::after { opacity: 1; }
+
+        .ac-1 { background: linear-gradient(145deg, #5D1E00, #8B3A00); border: 1px solid rgba(255,107,0,0.3); }
+        .ac-2 { background: linear-gradient(145deg, #4A0030, #7B1050); border: 1px solid rgba(233,30,99,0.3); }
+        .ac-3 { background: linear-gradient(145deg, #003040, #005060); border: 1px solid rgba(0,137,123,0.3); }
+        .ac-4 { background: linear-gradient(145deg, #1A0050, #2D0080); border: 1px solid rgba(57,73,171,0.3); }
+        .ac-5 { background: linear-gradient(145deg, #3D1A00, #6B2F00); border: 1px solid rgba(255,149,0,0.3); }
+
+        .archana-card .a-icon { font-size: 2.2rem; margin-bottom: 0.75rem; display: block; }
+        .archana-card h3 {
+            font-family: 'Yatra One', cursive;
+            font-size: 1rem;
+            color: var(--cream);
+            margin-bottom: 0.4rem;
+        }
+        .archana-card p {
+            font-size: 0.75rem;
+            color: rgba(255,248,231,0.5);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+        .archana-price {
+            display: inline-block;
+            background: rgba(255,215,0,0.15);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 50px;
+            padding: 0.3rem 1rem;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        /* ── FEATURES / WHY US ── */
+        .features-section {
+            background: linear-gradient(180deg, transparent, rgba(123,31,162,0.05), transparent);
+        }
+        .features-section .inner {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        .feature-list { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
+        .feature-item {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            padding: 1.2rem;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,165,0,0.08);
+            transition: all 0.3s;
+        }
+        .feature-item:hover {
+            background: rgba(255,107,0,0.06);
+            border-color: rgba(255,165,0,0.2);
+            transform: translateX(6px);
+        }
+        .fi-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+        .fi-1 { background: rgba(255,107,0,0.15); }
+        .fi-2 { background: rgba(233,30,99,0.15); }
+        .fi-3 { background: rgba(0,137,123,0.15); }
+        .fi-4 { background: rgba(255,215,0,0.12); }
+        .fi-body h4 { font-size: 0.95rem; font-weight: 600; color: var(--cream); margin-bottom: 0.2rem; }
+        .fi-body p  { font-size: 0.82rem; color: rgba(255,248,231,0.45); line-height: 1.5; }
+
+        /* Big visual side */
+        .feature-visual {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .temple-glow {
+            width: 320px; height: 320px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,107,0,0.15) 0%, rgba(255,215,0,0.08) 40%, transparent 70%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9rem;
+            animation: glowPulse 4s ease-in-out infinite;
+            position: relative;
+        }
+        .temple-glow::before {
+            content: '';
+            position: absolute;
+            inset: -20px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,165,0,0.1);
+            animation: spin 15s linear infinite;
+        }
+        .temple-glow::after {
+            content: '';
+            position: absolute;
+            inset: -40px;
+            border-radius: 50%;
+            border: 1px dashed rgba(255,107,0,0.08);
+            animation: spin 25s linear infinite reverse;
+        }
+        @keyframes glowPulse {
+            0%,100% { box-shadow: 0 0 60px rgba(255,107,0,0.2); }
+            50%      { box-shadow: 0 0 100px rgba(255,107,0,0.4), 0 0 200px rgba(255,215,0,0.1); }
+        }
+
+        /* ── CTA SECTION ── */
+        .cta-section {
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 50%, rgba(255,107,0,0.12) 0%, transparent 70%);
+        }
+        .cta-section .inner {
+            position: relative;
+            z-index: 1;
+            max-width: 650px;
+            margin: 0 auto;
+        }
+        .cta-section h2 {
+            font-family: 'Yatra One', cursive;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            background: linear-gradient(135deg, var(--gold), var(--saffron));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        .cta-section p {
+            color: rgba(255,248,231,0.55);
+            font-size: 1.05rem;
+            margin-bottom: 2.5rem;
+            line-height: 1.7;
+        }
+
+        /* ── FOOTER ── */
+        footer {
+            position: relative;
+            z-index: 1;
+            background: rgba(0,0,0,0.4);
+            border-top: 1px solid rgba(255,165,0,0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+        .footer-brand {
+            font-family: 'Yatra One', cursive;
+            font-size: 1.2rem;
+            color: var(--gold);
+            margin-bottom: 0.5rem;
+        }
+        footer p {
+            color: rgba(255,248,231,0.3);
+            font-size: 0.8rem;
+            line-height: 1.8;
+        }
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1rem 0;
+        }
+        .footer-links a {
+            color: rgba(255,248,231,0.4);
+            text-decoration: none;
+            font-size: 0.82rem;
+            transition: color 0.2s;
+        }
+        .footer-links a:hover { color: var(--gold); }
+
+        /* ── SCROLL REVEAL ── */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .reveal.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .nav { padding: 1rem 1.2rem; }
+            .nav-links a:not(.nav-cta) { display: none; }
+            .features-section .inner { grid-template-columns: 1fr; gap: 2rem; }
+            .feature-visual { display: none; }
+            .stats-bar { gap: 2rem; }
+            .temple-glow { width: 220px; height: 220px; font-size: 6rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+    <a href="/" class="nav-brand">🛕 Sri Venkateswara</a>
+    <div class="nav-links">
+        <a href="/">🏠 Home</a>
+        <a href="/chatbot">💬 Guide</a>
+        <a href="/donation">🙏 Donate</a>
+        <a href="/admin/login">🔐 Admin</a>
+        <a href="/booking" class="nav-cta">📿 Book Archana</a>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+
+    <!-- Mandalas -->
+    <div class="mandala m1"></div>
+    <div class="mandala m2"></div>
+    <div class="mandala m3"></div>
+
+    <!-- Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="hero-content">
+        <span class="hero-om">🕉️</span>
+        <div class="hero-tag">✨ Divine Blessings Await You</div>
+        <h1 class="hero-title">Sri Venkateswara<br>Temple</h1>
+        <p class="hero-sub">
+            Book your sacred archana online. Receive your QR ticket.<br>
+            Experience AI-chanted personalized blessings.
+        </p>
+        <div class="hero-btns">
+            <a href="/booking" class="btn-primary">📿 Book Archana Now</a>
+            <a href="/chatbot" class="btn-secondary">💬 Spiritual Guide</a>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="stat">
+        <div class="stat-num">5+</div>
+        <div class="stat-label">Archana Types</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num">AI</div>
+        <div class="stat-label">Voice Chanting</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num">QR</div>
+        <div class="stat-label">Instant Tickets</div>
+    </div>
+    <div class="stat">
+        <div class="stat-num">24/7</div>
+        <div class="stat-label">Spiritual Guide</div>
+    </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section reveal">
+    <div class="inner">
+        <div class="section-label">✨ Simple Process</div>
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-sub">Four easy steps to your personalized divine archana experience.</p>
+
+        <div class="steps-grid">
+            <div class="step-card reveal">
+                <div class="step-num">01</div>
+                <span class="step-icon">📝</span>
+                <h3>Fill Your Details</h3>
+                <p>Enter your name, gothram, nakshatram and choose your archana type</p>
+            </div>
+            <div class="step-card reveal" style="transition-delay:0.1s">
+                <div class="step-num">02</div>
+                <span class="step-icon">💳</span>
+                <h3>Make Payment</h3>
+                <p>Complete your secure online payment in seconds</p>
+            </div>
+            <div class="step-card reveal" style="transition-delay:0.2s">
+                <div class="step-num">03</div>
+                <span class="step-icon">📱</span>
+                <h3>Get QR Ticket</h3>
+                <p>Receive your unique QR code booking ticket instantly</p>
+            </div>
+            <div class="step-card reveal" style="transition-delay:0.3s">
+                <div class="step-num">04</div>
+                <span class="step-icon">🎙️</span>
+                <h3>AI Archana</h3>
+                <p>Priest scans QR and the system chants your personalized archana</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ARCHANA TYPES -->
+<section class="archana-section reveal">
+    <div class="inner">
+        <div class="section-label">🌸 Sacred Offerings</div>
+        <h2 class="section-title">Archana Types</h2>
+        <p class="section-sub">Choose from our range of divine archana services.</p>
+
+        <div class="archana-grid">
+            <a href="/booking" class="archana-card ac-1 reveal">
+                <span class="a-icon">🌸</span>
+                <h3>Pushparchana</h3>
+                <p>Simple flower archana with 108 divine names</p>
+                <span class="archana-price">₹10</span>
+            </a>
+            <a href="/booking" class="archana-card ac-2 reveal" style="transition-delay:0.1s">
+                <span class="a-icon">🔴</span>
+                <h3>Kumkumarchana</h3>
+                <p>Sacred kumkum archana for Devi's blessings</p>
+                <span class="archana-price">₹15</span>
+            </a>
+            <a href="/booking" class="archana-card ac-3 reveal" style="transition-delay:0.2s">
+                <span class="a-icon">💧</span>
+                <h3>Abhishekam</h3>
+                <p>Holy water abhishekam ritual for purification</p>
+                <span class="archana-price">₹40</span>
+            </a>
+            <a href="/booking" class="archana-card ac-4 reveal" style="transition-delay:0.3s">
+                <span class="a-icon">📿</span>
+                <h3>Sahasranamam</h3>
+                <p>1000 divine names archana for prosperity</p>
+                <span class="archana-price">₹30</span>
+            </a>
+            <a href="/booking" class="archana-card ac-5 reveal" style="transition-delay:0.4s">
+                <span class="a-icon">🔥</span>
+                <h3>Ganapathi Homam</h3>
+                <p>Sacred fire ritual for divine blessings</p>
+                <span class="archana-price">₹50</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section reveal">
+    <div class="inner">
+        <div>
+            <div class="section-label">⚡ Why Choose Us</div>
+            <h2 class="section-title">Divine Experience,<br>Modern Technology</h2>
+            <p class="section-sub">We blend ancient traditions with modern convenience.</p>
+
+            <div class="feature-list">
+                <div class="feature-item reveal">
+                    <div class="fi-icon fi-1">🤖</div>
+                    <div class="fi-body">
+                        <h4>AI-Powered Voice Chanting</h4>
+                        <p>Fish Audio AI generates a real priest voice chanting your personalized archana</p>
+                    </div>
+                </div>
+                <div class="feature-item reveal" style="transition-delay:0.1s">
+                    <div class="fi-icon fi-2">📱</div>
+                    <div class="fi-body">
+                        <h4>Instant QR Tickets</h4>
+                        <p>Get your unique QR code ticket immediately after booking confirmation</p>
+                    </div>
+                </div>
+                <div class="feature-item reveal" style="transition-delay:0.2s">
+                    <div class="fi-icon fi-3">💬</div>
+                    <div class="fi-body">
+                        <h4>24/7 Spiritual Guide</h4>
+                        <p>Our AI chatbot provides pooja guidance, slokams and spiritual comfort</p>
+                    </div>
+                </div>
+                <div class="feature-item reveal" style="transition-delay:0.3s">
+                    <div class="fi-icon fi-4">🌐</div>
+                    <div class="fi-body">
+                        <h4>Tamil & English Support</h4>
+                        <p>Full bilingual support for all archana chanting and spiritual guidance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="feature-visual">
+            <div class="temple-glow">🛕</div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section reveal">
+    <div class="inner">
+        <h2>Begin Your<br>Divine Journey</h2>
+        <p>Book your archana today and receive personalized blessings from Lord Venkateswara. Sarva Mangala Prapthirastu. 🙏</p>
+        <div class="hero-btns">
+            <a href="/booking" class="btn-primary">📿 Book Archana Now</a>
+            <a href="/donation" class="btn-secondary">🙏 Make a Donation</a>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-brand">🛕 Sri Venkateswara Temple</div>
+    <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/booking">Book Archana</a>
+        <a href="/chatbot">Spiritual Guide</a>
+        <a href="/donation">Donate</a>
+        <a href="/admin/login">Admin</a>
+    </div>
+    <p>Smart Archana Booking System | Final Year Project</p>
+    <p>Made with ❤️ using Spring Boot + Java + AI Voice</p>
+</footer>
+
+<script th:inline="none">
+'use strict';
+
+// ── PARTICLES ──────────────────────────────────
+(function() {
+    var container = document.getElementById('particles');
+    if (!container) return;
+    var colors = ['#FFD700','#FF9500','#FF6B00','#FFF8E7','#FFA500'];
+    for (var i = 0; i < 30; i++) {
+        (function(i) {
+            var p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left     = Math.random() * 100 + '%';
+            p.style.width    = (Math.random() * 3 + 2) + 'px';
+            p.style.height   = p.style.width;
+            p.style.background = colors[Math.floor(Math.random() * colors.length)];
+            p.style.animationDuration  = (Math.random() * 10 + 8) + 's';
+            p.style.animationDelay     = (Math.random() * 10) + 's';
+            container.appendChild(p);
+        })(i);
+    }
+})();
+
+// ── SCROLL REVEAL ──────────────────────────────
+(function() {
+    var items = document.querySelectorAll('.reveal');
+    var io = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                io.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    items.forEach(function(el) { io.observe(el); });
+})();
+
+// ── NAV SCROLL EFFECT ──────────────────────────
+window.addEventListener('scroll', function() {
+    var nav = document.querySelector('.nav');
+    if (!nav) return;
+    if (window.scrollY > 60) {
+        nav.style.background = 'rgba(26,10,0,0.97)';
+        nav.style.boxShadow  = '0 4px 30px rgba(0,0,0,0.4)';
+    } else {
+        nav.style.background = 'rgba(26,10,0,0.85)';
+        nav.style.boxShadow  = 'none';
+    }
+});
+</script>
+
+</body>
+</html>
