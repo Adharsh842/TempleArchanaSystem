@@ -2,18 +2,12 @@ package com.temple;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 @SpringBootApplication
-public class TempleArchanaSystemApplication extends SpringBootServletInitializer {
+public class TempleArchanaSystemApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(TempleArchanaSystemApplication.class, args);
     }
 
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
-        return builder.sources(TempleArchanaSystemApplication.class);
-    }
 }
