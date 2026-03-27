@@ -63,10 +63,13 @@ public class Booking {
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "qr_code_base64", columnDefinition = "LONGTEXT")
+    private String qrCodeBase64;
 
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         bookingDate = LocalDate.now();
+        
     }
 }

@@ -4,384 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Booking Confirmed | Temple Archana</title>
-
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-<!-- Add in <head> -->
-
-
-<!-- Add before </body> -->
-<script th:src="@{/js/animations.js}"></script>
+    <script th:src="@{/js/animations.js}"></script>
     <style>
-        /* ── RESET ───────────────────────────────────────────── */
         * { margin:0; padding:0; box-sizing:border-box; }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #fef9f0;
-            color: #333;
-        }
-
-        /* ── HEADER ──────────────────────────────────────────── */
-        .temple-header {
-            background: linear-gradient(135deg, #8B0000 0%, #B8860B 50%, #8B0000 100%);
-            color: white;
-            padding: 1.5rem;
-            text-align: center;
-        }
+        body { font-family: 'Poppins', sans-serif; background: #fef9f0; color: #333; }
+        .temple-header { background: linear-gradient(135deg, #8B0000 0%, #B8860B 50%, #8B0000 100%); color: white; padding: 1.5rem; text-align: center; }
         .temple-logo { font-size: 3rem; margin-bottom: 0.3rem; }
-        .temple-header h1 {
-            font-family: 'Cinzel', serif;
-            font-size: 1.8rem;
-            letter-spacing: 2px;
-        }
+        .temple-header h1 { font-family: 'Cinzel', serif; font-size: 1.8rem; letter-spacing: 2px; }
         .temple-header p { font-size: 0.95rem; opacity: 0.9; }
-
-        /* ── NAVIGATION ───────────────────────────────────────── */
-        .main-nav {
-            background: #8B0000;
-            display: flex;
-            justify-content: center;
-            border-bottom: 3px solid #B8860B;
-        }
-        .main-nav a {
-            color: white;
-            text-decoration: none;
-            padding: 0.8rem 1.5rem;
-            font-size: 0.9rem;
-            transition: background 0.3s;
-        }
+        .main-nav { background: #8B0000; display: flex; justify-content: center; border-bottom: 3px solid #B8860B; }
+        .main-nav a { color: white; text-decoration: none; padding: 0.8rem 1.5rem; font-size: 0.9rem; transition: background 0.3s; }
         .main-nav a:hover { background: #B8860B; }
-
-        /* ── SUCCESS BANNER ──────────────────────────────────── */
-        .success-banner {
-            background: linear-gradient(135deg, #16a34a, #15803d);
-            color: white;
-            text-align: center;
-            padding: 1.5rem 2rem;
-            margin: 1.5rem auto;
-            max-width: 900px;
-            border-radius: 12px;
-        }
+        .success-banner { background: linear-gradient(135deg, #16a34a, #15803d); color: white; text-align: center; padding: 1.5rem 2rem; margin: 1.5rem auto; max-width: 900px; border-radius: 12px; }
         .success-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
         .success-banner h2 { font-size: 1.5rem; margin-bottom: 0.3rem; }
         .success-banner p { opacity: 0.9; font-size: 0.95rem; }
-
-        /* ── TICKET CONTAINER ────────────────────────────────── */
-        .ticket-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 1rem 2rem;
-        }
-
-        /* ── TICKET CARD ─────────────────────────────────────── */
-        .ticket-card {
-            background: white;
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.15);
-            border: 3px solid #B8860B;
-            margin-bottom: 1.5rem;
-        }
-
-        .ticket-header {
-            background: linear-gradient(135deg, #8B0000, #B8860B);
-            color: white;
-            text-align: center;
-            padding: 1.2rem;
-        }
-        .ticket-header h2 {
-            font-family: 'Cinzel', serif;
-            font-size: 1.4rem;
-        }
+        .ticket-container { max-width: 900px; margin: 0 auto; padding: 0 1rem 2rem; }
+        .ticket-card { background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.15); border: 3px solid #B8860B; margin-bottom: 1.5rem; }
+        .ticket-header { background: linear-gradient(135deg, #8B0000, #B8860B); color: white; text-align: center; padding: 1.2rem; }
+        .ticket-header h2 { font-family: 'Cinzel', serif; font-size: 1.4rem; }
         .ticket-header p { opacity: 0.9; font-size: 0.9rem; margin-top: 0.3rem; }
-
-        /* ── TICKET BODY ─────────────────────────────────────── */
-        .ticket-body {
-            display: flex;
-            gap: 0;
-        }
-
-        /* Left: Details */
-        .ticket-details {
-            flex: 1;
-            padding: 1.5rem;
-            border-right: 2px dashed #f0d9a0;
-        }
-
-        .ticket-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.55rem 0;
-            border-bottom: 1px dashed #f5e6c0;
-        }
+        .ticket-body { display: flex; gap: 0; }
+        .ticket-details { flex: 1; padding: 1.5rem; border-right: 2px dashed #f0d9a0; }
+        .ticket-row { display: flex; justify-content: space-between; align-items: center; padding: 0.55rem 0; border-bottom: 1px dashed #f5e6c0; }
         .ticket-row:last-child { border-bottom: none; }
-
-        .ticket-row .label {
-            color: #888;
-            font-size: 0.82rem;
-            width: 42%;
-        }
-        .ticket-row .value {
-            font-weight: 600;
-            color: #333;
-            font-size: 0.88rem;
-            text-align: right;
-            width: 55%;
-        }
+        .ticket-row .label { color: #888; font-size: 0.82rem; width: 42%; }
+        .ticket-row .value { font-weight: 600; color: #333; font-size: 0.88rem; text-align: right; width: 55%; }
         .ticket-row .value.highlight { color: #8B0000; }
-        .ticket-row .value.booking-id {
-            font-family: monospace;
-            font-size: 0.78rem;
-            color: #8B0000;
-        }
+        .ticket-row .value.booking-id { font-family: monospace; font-size: 0.78rem; color: #8B0000; }
         .ticket-row .value.amount-paid { color: #16a34a; font-size: 1rem; }
-        .ticket-row .value.status-badge {
-            background: #dcfce7;
-            color: #16a34a;
-            padding: 0.2rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-        }
-
-        /* Right: QR Code */
-        .ticket-qr {
-            width: 220px;
-            min-width: 220px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 1.5rem 1rem;
-            background: #fef9f0;
-        }
-        .ticket-qr p {
-            font-weight: 600;
-            color: #8B0000;
-            margin-bottom: 0.75rem;
-            font-size: 0.9rem;
-            text-align: center;
-        }
-        .qr-image {
-            width: 170px;
-            height: 170px;
-            border: 3px solid #8B0000;
-            border-radius: 8px;
-            padding: 4px;
-            background: white;
-        }
-        .qr-hint {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 0.6rem;
-            text-align: center;
-            font-weight: 400 !important;
-        }
-        .qr-booking-id {
-            font-family: monospace;
-            font-size: 0.65rem;
-            color: #aaa;
-            margin-top: 0.3rem;
-            text-align: center;
-            word-break: break-all;
-        }
-
-        /* ── TICKET FOOTER ───────────────────────────────────── */
-        .ticket-footer {
-            background: #fef9f0;
-            text-align: center;
-            padding: 0.9rem;
-            border-top: 2px solid #f0d9a0;
-            color: #8B0000;
-            font-size: 0.88rem;
-            line-height: 1.8;
-        }
-        .booking-id-footer {
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: #aaa;
-            margin-top: 0.2rem;
-        }
-
-        /* ── ACTION BUTTONS ──────────────────────────────────── */
-        .ticket-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-print {
-            padding: 0.8rem 1.8rem;
-            background: #8B0000;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+        .ticket-row .value.status-badge { background: #dcfce7; color: #16a34a; padding: 0.2rem 0.8rem; border-radius: 20px; font-size: 0.8rem; }
+        .ticket-qr { width: 220px; min-width: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 1.5rem 1rem; background: #fef9f0; }
+        .ticket-qr p { font-weight: 600; color: #8B0000; margin-bottom: 0.75rem; font-size: 0.9rem; text-align: center; }
+        .qr-image { width: 170px; height: 170px; border: 3px solid #8B0000; border-radius: 8px; padding: 4px; background: white; }
+        .qr-hint { font-size: 0.75rem; color: #888; margin-top: 0.6rem; text-align: center; font-weight: 400 !important; }
+        .qr-booking-id { font-family: monospace; font-size: 0.65rem; color: #aaa; margin-top: 0.3rem; text-align: center; word-break: break-all; }
+        .ticket-footer { background: #fef9f0; text-align: center; padding: 0.9rem; border-top: 2px solid #f0d9a0; color: #8B0000; font-size: 0.88rem; line-height: 1.8; }
+        .booking-id-footer { font-family: monospace; font-size: 0.75rem; color: #aaa; margin-top: 0.2rem; }
+        .ticket-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+        .btn-print { padding: 0.8rem 1.8rem; background: #8B0000; color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: transform 0.2s; }
         .btn-print:hover { transform: translateY(-2px); }
-
-        .btn-secondary {
-            padding: 0.8rem 1.5rem;
-            background: white;
-            color: #8B0000;
-            border: 2px solid #8B0000;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-block;
-        }
-        .btn-secondary:hover {
-            background: #8B0000;
-            color: white;
-        }
-
-        /* ── AI VOICE SECTION ────────────────────────────────── */
-        .voice-section {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: white;
-            text-align: center;
-            padding: 2rem;
-            border-radius: 16px;
-            margin-top: 1rem;
-        }
+        .btn-secondary { padding: 0.8rem 1.5rem; background: white; color: #8B0000; border: 2px solid #8B0000; border-radius: 8px; font-size: 0.9rem; font-weight: 600; text-decoration: none; cursor: pointer; transition: all 0.2s; display: inline-block; }
+        .btn-secondary:hover { background: #8B0000; color: white; }
+        .voice-section { background: linear-gradient(135deg, #1a1a2e, #16213e); color: white; text-align: center; padding: 2rem; border-radius: 16px; margin-top: 1rem; }
         .voice-section h3 { color: #FFD700; margin-bottom: 0.5rem; font-size: 1.2rem; }
         .voice-section p { opacity: 0.8; margin-bottom: 1.2rem; font-size: 0.9rem; }
-
-        .btn-voice {
-            background: linear-gradient(135deg, #FFD700, #B8860B);
-            color: #1a1a2e;
-            padding: 0.9rem 2.5rem;
-            border: none;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+        .btn-voice { background: linear-gradient(135deg, #FFD700, #B8860B); color: #1a1a2e; padding: 0.9rem 2.5rem; border: none; border-radius: 50px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s; }
         .btn-voice:hover { transform: scale(1.05); }
-
-        .voice-text-display {
-            margin-top: 1.2rem;
-            background: rgba(255,255,255,0.08);
-            padding: 1rem;
-            border-radius: 10px;
-            font-style: italic;
-            line-height: 1.8;
-            font-size: 0.88rem;
-            color: #ffe066;
-            text-align: left;
-        }
-
-        /* ── FOOTER ──────────────────────────────────────────── */
-        .temple-footer {
-            background: #1a0000;
-            color: #FFD700;
-            text-align: center;
-            padding: 1.2rem;
-            font-size: 0.88rem;
-            line-height: 1.8;
-            margin-top: 2rem;
-        }
-
-        /* ── PRINT STYLES ────────────────────────────────────── */
-        @media print {
-            header, nav, .ticket-actions, .voice-section, footer {
-                display: none !important;
-            }
-            body { background: white; }
-            .ticket-card {
-                box-shadow: none;
-                border: 2px solid #333;
-            }
-        }
-
-        /* ── MOBILE RESPONSIVE ───────────────────────────────── */
-        @media (max-width: 650px) {
-            .ticket-body { flex-direction: column; }
-            .ticket-details { border-right: none; border-bottom: 2px dashed #f0d9a0; }
-            .ticket-qr { width: 100%; padding: 1.5rem; }
-        }
+        .voice-text-display { margin-top: 1.2rem; background: rgba(255,255,255,0.08); padding: 1rem; border-radius: 10px; font-style: italic; line-height: 1.8; font-size: 0.88rem; color: #ffe066; text-align: left; }
+        .temple-footer { background: #1a0000; color: #FFD700; text-align: center; padding: 1.2rem; font-size: 0.88rem; line-height: 1.8; margin-top: 2rem; }
+        @media print { header, nav, .ticket-actions, .voice-section, footer { display: none !important; } body { background: white; } .ticket-card { box-shadow: none; border: 2px solid #333; } }
+        @media (max-width: 650px) { .ticket-body { flex-direction: column; } .ticket-details { border-right: none; border-bottom: 2px dashed #f0d9a0; } .ticket-qr { width: 100%; padding: 1.5rem; } }
     </style>
 </head>
 <body>
-<script>
-// Creates an Om chanting background hum using Web Audio API
-function createOmBackground() {
-    try {
-        var AudioCtx = window.AudioContext || window.webkitAudioContext;
-        var ctx      = new AudioCtx();
-        var gainNode = ctx.createGain();
-        gainNode.connect(ctx.destination);
-        gainNode.gain.setValueAtTime(0.05, ctx.currentTime); // Very soft
 
-        // Low Om frequency (136.1 Hz is the sacred Om frequency)
-        var osc1 = ctx.createOscillator();
-        osc1.type = 'sine';
-        osc1.frequency.setValueAtTime(136.1, ctx.currentTime);
-        osc1.connect(gainNode);
-        osc1.start();
-
-        // Harmonic overtone
-        var osc2 = ctx.createOscillator();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(272.2, ctx.currentTime);
-        var gain2 = ctx.createGain();
-        gain2.gain.setValueAtTime(0.02, ctx.currentTime);
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-        osc2.start();
-
-        // Fade in
-        gainNode.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 2);
-
-        return {
-            stop: function() {
-                gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 1);
-                setTimeout(function() {
-                    try { osc1.stop(); osc2.stop(); ctx.close(); } catch(e) {}
-                }, 1200);
-            }
-        };
-    } catch(e) {
-        return { stop: function(){} };
-    }
-}
-
-// Store background reference globally
-var omBackground = null;
-
-// Override speakPriestStyle to add Om background
-var _originalSpeak = speakPriestStyle;
-speakPriestStyle = function(text, btnId) {
-    // Start Om background
-    omBackground = createOmBackground();
-
-    // Call original speak
-    _originalSpeak(text, btnId);
-
-    // Stop background when voice ends
-    var checkInterval = setInterval(function() {
-        if (!window.speechSynthesis.speaking) {
-            if (omBackground) {
-                omBackground.stop();
-                omBackground = null;
-            }
-            clearInterval(checkInterval);
-        }
-    }, 1000);
-};
-</script>
-
-<!-- ═══════════ HEADER ═══════════ -->
 <header class="temple-header">
     <div class="header-content">
         <div class="temple-logo">✅</div>
@@ -390,33 +68,27 @@ speakPriestStyle = function(text, btnId) {
     </div>
 </header>
 
-<!-- ═══════════ NAVIGATION ═══════════ -->
 <nav class="main-nav">
     <a href="/">🏠 Home</a>
     <a href="/booking">📿 Book Another</a>
     <a href="/admin/login">🔐 Admin</a>
 </nav>
 
-<!-- ═══════════ MAIN CONTENT ═══════════ -->
 <main class="ticket-container">
 
-    <!-- Success Banner -->
     <div class="success-banner">
         <span class="success-icon">🎉</span>
         <h2>Payment Successful! Archana Booked!</h2>
         <p>Save or print this ticket and show the QR code to the temple priest</p>
     </div>
 
-    <!-- ═══ TICKET CARD ═══ -->
     <div class="ticket-card" id="ticketCard">
 
-        <!-- Ticket Top -->
         <div class="ticket-header">
             <h2>🛕 Sri Venkateswara Temple</h2>
             <p>Official Archana Booking Ticket</p>
         </div>
 
-        <!-- Ticket Middle: Details + QR -->
         <div class="ticket-body">
 
             <!-- LEFT: Booking Details -->
@@ -424,63 +96,55 @@ speakPriestStyle = function(text, btnId) {
 
                 <div class="ticket-row">
                     <span class="label">📋 Booking ID</span>
-                    <span class="value booking-id"
-                          th:text="${booking.bookingId}">TEMPLE-xxx</span>
+                    <span class="value booking-id" th:text="${booking.bookingId}">TEMPLE-xxx</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">👤 Devotee Name</span>
-                    <span class="value"
-                          th:text="${devotee.name}">Name</span>
+                    <!-- ✅ Use snapshot field -->
+                    <span class="value" th:text="${booking.devoteeName != null} ? ${booking.devoteeName} : ${devotee.name}">Name</span>
                 </div>
 
                 <div class="ticket-row">
-                    <span class="label">🏛️ Gothram</span>
-                    <span class="value"
-                          th:text="${devotee.gothram}">Gothram</span>
+                    <span class="label">🌙 Raasi</span>
+                    <!-- ✅ Use snapshot field, renamed from Gothram to Raasi -->
+                    <span class="value" th:text="${booking.raasi != null} ? ${booking.raasi} : ${devotee.gothram}">Raasi</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">⭐ Nakshatram</span>
-                    <span class="value"
-                          th:text="${devotee.nakshatram}">Nakshatram</span>
+                    <!-- ✅ Use snapshot field -->
+                    <span class="value" th:text="${booking.devoteeNakshatram != null} ? ${booking.devoteeNakshatram} : ${devotee.nakshatram}">Nakshatram</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">📱 Phone</span>
-                    <span class="value"
-                          th:text="${devotee.phone}">Phone</span>
+                    <span class="value" th:text="${devotee.phone}">Phone</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">🌸 Archana Type</span>
-                    <span class="value highlight"
-                          th:text="${booking.archanaType}">Archana</span>
+                    <span class="value highlight" th:text="${booking.archanaType}">Archana</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">⏰ Time Slot</span>
-                    <span class="value"
-                          th:text="${booking.timeSlot}">Slot</span>
+                    <span class="value" th:text="${booking.timeSlot}">Slot</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">📅 Date</span>
-                    <span class="value"
-                          th:text="${booking.bookingDate}">Date</span>
+                    <span class="value" th:text="${booking.bookingDate}">Date</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">💰 Amount Paid</span>
-                    <span class="value amount-paid">
-                        ₹<span th:text="${booking.amount}">0</span>
-                    </span>
+                    <span class="value amount-paid">₹<span th:text="${booking.amount}">0</span></span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">✅ Status</span>
-                    <span class="value status-badge"
-                          th:text="${booking.bookingStatus}">CONFIRMED</span>
+                    <span class="value status-badge" th:text="${booking.bookingStatus}">CONFIRMED</span>
                 </div>
 
             </div>
@@ -489,20 +153,24 @@ speakPriestStyle = function(text, btnId) {
             <div class="ticket-qr">
                 <p>📱 Scan at Temple</p>
 
-                <!-- Show QR image if path exists -->
-                <th:block th:if="${booking.qrCodePath != null}">
+                <!-- ✅ FIXED: Show Base64 QR code -->
+                <th:block th:if="${booking.qrCodeBase64 != null}">
+                    <img th:src="'data:image/png;base64,' + ${booking.qrCodeBase64}"
+                         alt="QR Code"
+                         class="qr-image"/>
+                </th:block>
+
+                <!-- ✅ Fallback: old file path QR (for existing bookings) -->
+                <th:block th:if="${booking.qrCodeBase64 == null and booking.qrCodePath != null}">
                     <img th:src="@{${booking.qrCodePath}}"
                          alt="QR Code"
                          class="qr-image"
-                         onerror="this.src='';this.alt='QR Loading...';">
+                         onerror="this.style.display='none'"/>
                 </th:block>
 
-                <!-- Fallback if no QR path -->
-                <th:block th:unless="${booking.qrCodePath != null}">
-                    <div style="width:170px; height:170px; border:2px dashed
-                         #8B0000; display:flex; align-items:center;
-                         justify-content:center; text-align:center;
-                         font-size:0.8rem; color:#8B0000; border-radius:8px;">
+                <!-- ✅ Fallback if no QR at all -->
+                <th:block th:if="${booking.qrCodeBase64 == null and booking.qrCodePath == null}">
+                    <div style="width:170px;height:170px;border:2px dashed #8B0000;display:flex;align-items:center;justify-content:center;text-align:center;font-size:0.8rem;color:#8B0000;border-radius:8px;">
                         QR Code<br>Not Available
                     </div>
                 </th:block>
@@ -513,60 +181,44 @@ speakPriestStyle = function(text, btnId) {
 
         </div>
 
-        <!-- Ticket Bottom Footer -->
         <div class="ticket-footer">
             <p>🙏 May the blessings of Lord Venkateswara be upon you and your family</p>
             <p class="booking-id-footer" th:text="${booking.bookingId}"></p>
         </div>
 
     </div>
-    <!-- END TICKET CARD -->
 
-    <!-- ═══ ACTION BUTTONS ═══ -->
     <div class="ticket-actions">
-        <button onclick="window.print()" class="btn-print">
-            🖨️ Print Ticket
-        </button>
-        <a href="/booking" class="btn-secondary">
-            📿 Book Another Archana
-        </a>
-        <a href="/" class="btn-secondary">
-            🏠 Go to Home
-        </a>
+        <button onclick="window.print()" class="btn-print">🖨️ Print Ticket</button>
+        <a href="/booking" class="btn-secondary">📿 Book Another Archana</a>
+        <a href="/" class="btn-secondary">🏠 Go to Home</a>
     </div>
 
-    <!-- ═══ AI VOICE SECTION ═══ -->
     <div class="voice-section">
         <h3>🎙️ AI Voice Archana Preview</h3>
         <p>Click to hear your personalized archana announcement (use Chrome)</p>
-
         <button class="btn-voice" id="playVoice" onclick="playArchanaVoice()">
             🔊 Play AI Archana Voice
         </button>
-
-        <div id="voiceText" class="voice-text-display"
-             style="display:none;"></div>
+        <div id="voiceText" class="voice-text-display" style="display:none;"></div>
     </div>
 
 </main>
 
-<!-- ═══════════ FOOTER ═══════════ -->
 <footer class="temple-footer">
     <p>🛕 Sri Venkateswara Temple | Smart Archana Automation System</p>
     <p>Final Year Project | Powered by Spring Boot + Java + AI Voice</p>
 </footer>
 
-<!-- Hidden spans to pass server data to JavaScript safely -->
-<span id="d-name"    th:text="${devotee.name}"        style="display:none"></span>
-<span id="d-gothram" th:text="${devotee.gothram}"     style="display:none"></span>
-<span id="d-naksha"  th:text="${devotee.nakshatram}"  style="display:none"></span>
-<span id="d-archana" th:text="${booking.archanaType}" style="display:none"></span>
-<span id="d-slot"    th:text="${booking.timeSlot}"    style="display:none"></span>
+<!-- Hidden data for voice -->
+<span id="d-name"    th:text="${booking.devoteeName != null} ? ${booking.devoteeName} : ${devotee.name}"       style="display:none"></span>
+<span id="d-gothram" th:text="${booking.raasi != null} ? ${booking.raasi} : ${devotee.gothram}"                style="display:none"></span>
+<span id="d-naksha"  th:text="${booking.devoteeNakshatram != null} ? ${booking.devoteeNakshatram} : ${devotee.nakshatram}" style="display:none"></span>
+<span id="d-archana" th:text="${booking.archanaType}"  style="display:none"></span>
+<span id="d-slot"    th:text="${booking.timeSlot}"     style="display:none"></span>
 
-<!-- AI Voice JavaScript -->
 <script>
 function playArchanaVoice() {
-
     var devoteeName = document.getElementById('d-name').textContent.trim();
     var gothram     = document.getElementById('d-gothram').textContent.trim();
     var nakshatram  = document.getElementById('d-naksha').textContent.trim();
@@ -575,18 +227,16 @@ function playArchanaVoice() {
 
     var archanaText =
         'Om... Shubham Karoti Kalyanam. ' +
-        'Arogya Dhana Sampada. ' +
-        'Om Namah. ' +
+        'Arogya Dhana Sampada. Om Namah. ' +
         devoteeName + ' avargaluku, ' +
-        gothram + ' gothram, ' +
+        gothram + ' raasi, ' +
         nakshatram + ' nakshatram, ' +
         archanaType + ' samarpanam. ' +
         'Sarva Mangala Prapthirastu. ' +
         'Ayu Arogyam Aishwaryam. ' +
         'Dheerga Ayushu Prapthirastu. ' +
         'Om Shanti Shanti Shantihi. ' +
-        'Jai Sri Venkateswara! ' +
-        'Govinda! Govinda! Govinda!';
+        'Jai Sri Venkateswara! Govinda! Govinda! Govinda!';
 
     var voiceTextDiv = document.getElementById('voiceText');
     voiceTextDiv.style.display = 'block';
@@ -598,10 +248,9 @@ function playArchanaVoice() {
     }
 
     window.speechSynthesis.cancel();
-
     var utterance = new SpeechSynthesisUtterance(archanaText);
-    utterance.rate   = 0.75;
-    utterance.pitch  = 0.8;
+    utterance.rate = 0.75;
+    utterance.pitch = 0.8;
     utterance.volume = 1.0;
 
     var btn = document.getElementById('playVoice');
@@ -628,14 +277,8 @@ function playArchanaVoice() {
         setTimeout(doSpeak, 300);
     }
 
-    utterance.onend = function() {
-        btn.textContent = '🔊 Play Again';
-        btn.disabled = false;
-    };
-    utterance.onerror = function() {
-        btn.textContent = '🔊 Retry Voice';
-        btn.disabled = false;
-    };
+    utterance.onend = function() { btn.textContent = '🔊 Play Again'; btn.disabled = false; };
+    utterance.onerror = function() { btn.textContent = '🔊 Retry Voice'; btn.disabled = false; };
 }
 </script>
 

@@ -114,11 +114,12 @@ public class BookingService {
             "Slot:"      + timeSlot;
 
         try {
-            String qrPath = qrCodeService.generateQRCode(bookingId, qrContent);
-            booking.setQrCodePath(qrPath);
+            String base64 = qrCodeService.generateQRCodeBase64(bookingId, qrContent);
+            booking.setQrCodeBase64(base64);
+            booking.setQrCodePath("/qrcodes/QR_" + bookingId + ".png"); // keep for reference
         } catch (Exception e) {
             System.err.println("QR error: " + e.getMessage());
-            booking.setQrCodePath(null);
+            booking.setQrCodeBase64(null);
         }
 
         Booking savedBooking = bookingRepository.save(booking);
