@@ -16,7 +16,8 @@
         .main-nav { background: #8B0000; display: flex; justify-content: center; border-bottom: 3px solid #B8860B; }
         .main-nav a { color: white; text-decoration: none; padding: 0.8rem 1.5rem; font-size: 0.9rem; transition: background 0.3s; }
         .main-nav a:hover { background: #B8860B; }
-        .success-banner { background: linear-gradient(135deg, #16a34a, #15803d); color: white; text-align: center; padding: 1.5rem 2rem; margin: 1.5rem auto; max-width: 900px; border-radius: 12px; }
+        .success-banner { background: l
+        linear-gradient(135deg, #16a34a, #15803d); color: white; text-align: center; padding: 1.5rem 2rem; margin: 1.5rem auto; max-width: 900px; border-radius: 12px; }
         .success-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
         .success-banner h2 { font-size: 1.5rem; margin-bottom: 0.3rem; }
         .success-banner p { opacity: 0.9; font-size: 0.95rem; }
@@ -91,7 +92,6 @@
 
         <div class="ticket-body">
 
-            <!-- LEFT: Booking Details -->
             <div class="ticket-details">
 
                 <div class="ticket-row">
@@ -101,19 +101,17 @@
 
                 <div class="ticket-row">
                     <span class="label">👤 Devotee Name</span>
-                    <!-- ✅ Use snapshot field -->
                     <span class="value" th:text="${booking.devoteeName != null} ? ${booking.devoteeName} : ${devotee.name}">Name</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">🌙 Raasi</span>
-                    <!-- ✅ Use snapshot field, renamed from Gothram to Raasi -->
-                    <span class="value" th:text="${booking.raasi != null} ? ${booking.raasi} : ${devotee.gothram}">Raasi</span>
+                    <!-- ✅ FIXED: using devoteeRaasi (correct field name) -->
+                    <span class="value" th:text="${booking.devoteeRaasi != null} ? ${booking.devoteeRaasi} : ${devotee.gothram}">Raasi</span>
                 </div>
 
                 <div class="ticket-row">
                     <span class="label">⭐ Nakshatram</span>
-                    <!-- ✅ Use snapshot field -->
                     <span class="value" th:text="${booking.devoteeNakshatram != null} ? ${booking.devoteeNakshatram} : ${devotee.nakshatram}">Nakshatram</span>
                 </div>
 
@@ -149,26 +147,24 @@
 
             </div>
 
-            <!-- RIGHT: QR Code -->
+            <!-- QR Code -->
             <div class="ticket-qr">
                 <p>📱 Scan at Temple</p>
 
-                <!-- ✅ FIXED: Show Base64 QR code -->
+                <!-- ✅ Base64 QR -->
                 <th:block th:if="${booking.qrCodeBase64 != null}">
                     <img th:src="'data:image/png;base64,' + ${booking.qrCodeBase64}"
-                         alt="QR Code"
-                         class="qr-image"/>
+                         alt="QR Code" class="qr-image"/>
                 </th:block>
 
-                <!-- ✅ Fallback: old file path QR (for existing bookings) -->
+                <!-- Fallback: file path -->
                 <th:block th:if="${booking.qrCodeBase64 == null and booking.qrCodePath != null}">
                     <img th:src="@{${booking.qrCodePath}}"
-                         alt="QR Code"
-                         class="qr-image"
+                         alt="QR Code" class="qr-image"
                          onerror="this.style.display='none'"/>
                 </th:block>
 
-                <!-- ✅ Fallback if no QR at all -->
+                <!-- Fallback: no QR -->
                 <th:block th:if="${booking.qrCodeBase64 == null and booking.qrCodePath == null}">
                     <div style="width:170px;height:170px;border:2px dashed #8B0000;display:flex;align-items:center;justify-content:center;text-align:center;font-size:0.8rem;color:#8B0000;border-radius:8px;">
                         QR Code<br>Not Available
@@ -210,9 +206,9 @@
     <p>Final Year Project | Powered by Spring Boot + Java + AI Voice</p>
 </footer>
 
-<!-- Hidden data for voice -->
-<span id="d-name"    th:text="${booking.devoteeName != null} ? ${booking.devoteeName} : ${devotee.name}"       style="display:none"></span>
-<span id="d-gothram" th:text="${booking.raasi != null} ? ${booking.raasi} : ${devotee.gothram}"                style="display:none"></span>
+<!-- ✅ FIXED: all hidden spans use correct field names -->
+<span id="d-name"    th:text="${booking.devoteeName != null} ? ${booking.devoteeName} : ${devotee.name}"             style="display:none"></span>
+<span id="d-gothram" th:text="${booking.devoteeRaasi != null} ? ${booking.devoteeRaasi} : ${devotee.gothram}"         style="display:none"></span>
 <span id="d-naksha"  th:text="${booking.devoteeNakshatram != null} ? ${booking.devoteeNakshatram} : ${devotee.nakshatram}" style="display:none"></span>
 <span id="d-archana" th:text="${booking.archanaType}"  style="display:none"></span>
 <span id="d-slot"    th:text="${booking.timeSlot}"     style="display:none"></span>
@@ -223,7 +219,6 @@ function playArchanaVoice() {
     var gothram     = document.getElementById('d-gothram').textContent.trim();
     var nakshatram  = document.getElementById('d-naksha').textContent.trim();
     var archanaType = document.getElementById('d-archana').textContent.trim();
-    var timeSlot    = document.getElementById('d-slot').textContent.trim();
 
     var archanaText =
         'Om... Shubham Karoti Kalyanam. ' +
