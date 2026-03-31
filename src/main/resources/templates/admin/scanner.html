@@ -7,6 +7,25 @@
     <title>QR Scanner | Temple Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Yatra+One&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+
+    <!-- ✅ MOBILE FIX: Unlock AudioContext on first touch -->
+    <script>
+    document.addEventListener('touchstart', function unlockAudio() {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) {
+            var ctx = new AC();
+            var buf = ctx.createBuffer(1, 1, 22050);
+            var src = ctx.createBufferSource();
+            src.buffer = buf;
+            src.connect(ctx.destination);
+            src.start(0);
+            ctx.resume();
+            setTimeout(function(){ ctx.close(); }, 100);
+        }
+        document.removeEventListener('touchstart', unlockAudio);
+    }, false);
+    </script>
+
     <style>
         :root {
             --saffron:#FF6B00; --saffron2:#FF9500;
@@ -121,7 +140,20 @@
         .slabel{color:var(--gold);font-weight:600;font-size:0.77rem;margin-bottom:4px;}
         .sdone{color:#4ade80;font-weight:600;margin-top:7px;padding-top:7px;border-top:1px solid rgba(26,58,42,0.5);font-size:0.75rem;}
         footer{position:relative;z-index:1;background:rgba(0,0,0,0.3);border-top:1px solid rgba(255,165,0,0.08);text-align:center;padding:1.2rem;color:rgba(255,248,231,0.25);font-size:0.78rem;margin-top:2rem;}
-        @media(max-width:768px){.two-col{grid-template-columns:1fr;}.main{padding:1.5rem 1rem 3rem;}}
+
+        /* ✅ MOBILE SPECIFIC STYLES */
+        @media(max-width:768px){
+            .two-col{grid-template-columns:1fr;}
+            .main{padding:1rem 0.75rem 3rem;}
+            .admin-header{padding:0.75rem 1rem;}
+            .admin-nav{padding:0 0.5rem;}
+            .admin-nav a{padding:0.65rem 0.75rem;font-size:0.78rem;}
+            .btn{padding:1rem;font-size:0.95rem;min-height:52px;}
+            .btn-sm{padding:0.85rem;font-size:0.88rem;}
+            .cam-box{height:200px;}
+            audio{width:100%;height:54px;}
+            .ap-box{padding:1rem;}
+        }
     </style>
 </head>
 <body>
@@ -225,7 +257,7 @@
 
                         <div class="a-row">
                             <div class="a-dot on" id="aDot"></div>
-                            <span class="a-txt" id="aTxt">Ready — click button to play</span>
+                            <span class="a-txt" id="aTxt">Ready — tap button to play</span>
                         </div>
 
                         <div class="ltabs">
@@ -242,7 +274,7 @@
                             <button class="btn btn-stop-all"      type="button" onclick="stopAll()">⏹️ Stop All Sound</button>
                             <div id="fishAudioBox" class="ap-box">
                                 <div class="ap-label">🐟 Fish AI Priest Audio:</div>
-                                <audio id="fishAudio" controls></audio>
+                                <audio id="fishAudio" controls style="width:100%;"></audio>
                             </div>
                         </div>
 
@@ -269,13 +301,14 @@
 <script th:inline="none">
 'use strict';
 
-var bData      = null;
-var audioCtx   = null;
-var omNodes    = [];
-var speaking   = false;
-var camScanner = null;
-var lang       = 'tamil';
-var tVoice     = null;
+var bData        = null;
+var audioCtx     = null;
+var omNodes      = [];
+var speaking     = false;
+var camScanner   = null;
+var lang         = 'tamil';
+var tVoice       = null;
+var fishAudioUrl = null;
 
 window.addEventListener('load', function() { setTimeout(loadVoices, 600); });
 
@@ -373,10 +406,9 @@ function showSuccess(d, bk) {
 
     var info = document.getElementById('bookingInfo');
     if (info && bk) {
-        // ✅ FIXED: use devoteeRaasi and devoteeNakshatram
-        var raasi  = bk.devoteeRaasi  || bk.gothram    || '';
-        var naksha = bk.devoteeNakshatram || bk.nakshatram || '';
-        var name   = bk.devoteeName   || '';
+        var raasi  = bk.devoteeRaasi       || bk.gothram    || '';
+        var naksha = bk.devoteeNakshatram  || bk.nakshatram || '';
+        var name   = bk.devoteeName       || '';
         info.innerHTML =
             BI('Booking ID', '<span style="font-family:monospace;font-size:0.75rem;color:rgba(255,165,0,0.7);">' + bk.bookingId + '</span>') +
             BI('Devotee',    '<strong style="color:#fff;">' + name + '</strong>') +
@@ -386,14 +418,16 @@ function showSuccess(d, bk) {
             BI('Time Slot',  bk.timeSlot) +
             BI('Amount',     '<span class="bi-amount">₹' + bk.amount + '</span>');
     }
-    loadVoices(); setLang('tamil');
-    setAS('on', 'Ready — click 🐟 Fish AI Priest Voice');
+    loadVoices();
+    setLang('tamil');
+    setAS('on', 'Ready — tap 🐟 Fish AI Priest Voice');
 }
 
 function BI(l, v) {
     return '<div class="bi-row"><span class="bi-label">' + l + '</span><span class="bi-value">' + v + '</span></div>';
 }
 
+// ✅ MOBILE FIX: AudioContext with proper resume
 function getAC() {
     return new Promise(function(resolve) {
         try {
@@ -401,9 +435,15 @@ function getAC() {
             if (!AC) { resolve(null); return; }
             if (!audioCtx) audioCtx = new AC();
             if (audioCtx.state === 'suspended') {
-                audioCtx.resume().then(function() { resolve(audioCtx); }).catch(function() { audioCtx = new AC(); resolve(audioCtx); });
-            } else if (audioCtx.state === 'closed') { audioCtx = new AC(); resolve(audioCtx); }
-            else { resolve(audioCtx); }
+                audioCtx.resume()
+                    .then(function() { resolve(audioCtx); })
+                    .catch(function() { audioCtx = new AC(); resolve(audioCtx); });
+            } else if (audioCtx.state === 'closed') {
+                audioCtx = new AC();
+                resolve(audioCtx);
+            } else {
+                resolve(audioCtx);
+            }
         } catch(e) { resolve(null); }
     });
 }
@@ -415,12 +455,18 @@ function oneBell(ctx, t, v) {
         o.type = 'sine'; o.frequency.setValueAtTime(f,t);
         o.frequency.exponentialRampToValueAtTime(f*0.97, t+3);
         var vol = v/(i+1);
-        g.gain.setValueAtTime(0.001,t); g.gain.linearRampToValueAtTime(vol, t+0.008);
+        g.gain.setValueAtTime(0.001,t);
+        g.gain.linearRampToValueAtTime(vol, t+0.008);
         g.gain.exponentialRampToValueAtTime(0.001, t+3.5);
         o.start(t); o.stop(t+3.6);
     });
 }
-function threeBells(ctx) { var n=ctx.currentTime; oneBell(ctx,n,0.8); oneBell(ctx,n+1.3,0.8); oneBell(ctx,n+2.5,0.9); }
+function threeBells(ctx) {
+    var n=ctx.currentTime;
+    oneBell(ctx,n,0.8);
+    oneBell(ctx,n+1.3,0.8);
+    oneBell(ctx,n+2.5,0.9);
+}
 
 function startOm(ctx) {
     stopOm();
@@ -435,141 +481,301 @@ function startOm(ctx) {
 }
 function stopOm() {
     omNodes.forEach(function(x) {
-        try { x.g.gain.linearRampToValueAtTime(0.001,x.ctx.currentTime+1); setTimeout(function(){try{x.o.stop();}catch(e){}},1100); } catch(e){}
+        try {
+            x.g.gain.linearRampToValueAtTime(0.001,x.ctx.currentTime+1);
+            setTimeout(function(){ try{x.o.stop();}catch(e){} },1100);
+        } catch(e){}
     });
     omNodes=[];
 }
 
+// ✅ FULLY MOBILE-FIXED playFishAudio
 function playFishAudio(l) {
     if (!bData) { alert('Please verify a booking first.'); return; }
+
     var btnId = l==='tamil' ? 'btnGTamil' : 'btnGEng';
     var btn   = document.getElementById(btnId);
     if (btn) { btn.textContent='⏳ Generating...'; btn.disabled=true; }
-    setAS('go','🐟 Fish Audio generating priest voice...');
+    setAS('go','🐟 Generating Fish AI Priest voice...');
+
     var fishBox = document.getElementById('fishAudioBox');
     if (fishBox) fishBox.style.display='block';
+
+    // ✅ Resume AudioContext on user gesture (mobile requirement)
     getAC().then(function(ctx) {
-        if (ctx) { threeBells(ctx); setTimeout(function(){startOm(ctx);},4500); }
+        if (ctx && ctx.state === 'suspended') { ctx.resume(); }
+        if (ctx) {
+            threeBells(ctx);
+            setTimeout(function(){ startOm(ctx); }, 4500);
+        }
     });
-    fetch('/api/fish-audio/'+encodeURIComponent(bData.bookingId)+'?lang='+(l==='tamil'?'tamil':'english'),{method:'POST'})
-        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-        .then(function(d){
-            if(d.success){
-                if(d.script) showScript(d.script,l);
-                var audio=document.getElementById('fishAudio');
-                if(!audio) return;
-                audio.src=d.audioPath+'?t='+Date.now(); audio.load();
-                audio.play().then(function(){
-                    setAS('go','🐟 Fish AI Priest chanting archana...');
-                    if(btn) btn.textContent='🔊 Priest chanting...';
-                    audio.onended=function(){ stopOm(); setAS('on','✅ Archana complete! Sarva Mangala! 🙏'); resetBtns(); appendDone(); };
-                }).catch(function(){
-                    setAS('on','👆 Click ▶ on the audio player to play');
-                    resetBtns();
-                });
+
+    fetch('/api/fish-audio/' + encodeURIComponent(bData.bookingId) +
+          '?lang=' + (l==='tamil' ? 'tamil' : 'english'), { method: 'POST' })
+        .then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function(d) {
+            if (d.success && d.audioBase64) {
+
+                if (d.script) showScript(d.script, l);
+
+                // ✅ base64 → Blob → ObjectURL (works on all mobile browsers)
+                var byteChars   = atob(d.audioBase64);
+                var byteNumbers = new Array(byteChars.length);
+                for (var i = 0; i < byteChars.length; i++) {
+                    byteNumbers[i] = byteChars.charCodeAt(i);
+                }
+                var blob = new Blob([new Uint8Array(byteNumbers)], { type: 'audio/mpeg' });
+
+                if (fishAudioUrl) { URL.revokeObjectURL(fishAudioUrl); }
+                fishAudioUrl = URL.createObjectURL(blob);
+
+                // ✅ Rebuild audio element fresh (fixes Safari/iOS cache issues)
+                if (fishBox) {
+                    fishBox.style.display = 'block';
+                    fishBox.innerHTML =
+                        '<div class="ap-label">🐟 Fish AI Priest Audio:</div>' +
+                        '<audio id="fishAudio" controls style="width:100%;"></audio>';
+                }
+
+                var audio = document.getElementById('fishAudio');
+                if (!audio) return;
+
+                audio.src = fishAudioUrl;
+                audio.load();
+
+                // ✅ play() promise handles mobile autoplay block gracefully
+                var playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(function() {
+                        setAS('go', '🐟 Fish AI Priest chanting archana...');
+                        if (btn) btn.textContent = '🔊 Priest chanting...';
+
+                        audio.onended = function() {
+                            stopOm();
+                            setAS('on', '✅ Archana complete! Sarva Mangala! 🙏');
+                            resetBtns();
+                            appendDone();
+                            URL.revokeObjectURL(fishAudioUrl);
+                            fishAudioUrl = null;
+                        };
+
+                    }).catch(function() {
+                        // ✅ Autoplay blocked on mobile — show big tap-to-play
+                        stopOm();
+                        resetBtns();
+                        setAS('on', '👆 Tap ▶ below to play archana');
+
+                        if (fishBox) {
+                            fishBox.style.display   = 'block';
+                            fishBox.style.padding   = '1rem';
+                            fishBox.style.background = '#1a0040';
+                            fishBox.innerHTML =
+                                '<div style="color:#cc99ff;font-weight:700;margin-bottom:8px;">🐟 Fish AI Priest Voice Ready!</div>' +
+                                '<div style="color:#ffe066;font-size:0.82rem;margin-bottom:10px;">👆 Tap the play button to hear archana:</div>' +
+                                '<audio id="fishAudio" controls style="width:100%;height:54px;"></audio>';
+
+                            var a2 = document.getElementById('fishAudio');
+                            if (a2) {
+                                a2.src = fishAudioUrl;
+                                a2.load();
+                                a2.onended = function() {
+                                    stopOm();
+                                    setAS('on','✅ Archana complete! Sarva Mangala! 🙏');
+                                    appendDone();
+                                    URL.revokeObjectURL(fishAudioUrl);
+                                    fishAudioUrl = null;
+                                };
+                            }
+                        }
+                    });
+                }
+
             } else {
-                setAS('err','⚠️ '+d.message+' → Using Valluvar...');
+                // Fish Audio failed → fallback to Valluvar
+                setAS('err', '⚠️ ' + (d.message || 'Fish Audio failed') + ' → Using Valluvar...');
                 resetBtns();
-                setTimeout(function(){speakValluvar('btnValluvar');},1000);
+                setTimeout(function() { speakValluvar('btnValluvar'); }, 800);
             }
         })
-        .catch(function(err){
-            setAS('err','⚠️ '+err.message+' → Using Valluvar...');
+        .catch(function(err) {
+            setAS('err', '⚠️ ' + err.message + ' → Using Valluvar...');
             resetBtns();
-            setTimeout(function(){speakValluvar('btnValluvar');},1000);
+            setTimeout(function() { speakValluvar('btnValluvar'); }, 800);
         });
 }
 
+// ✅ MOBILE-FIXED bellAndValluvar
 function bellAndValluvar() {
     var btn=document.getElementById('btnValluvar');
     if(btn){btn.textContent='⏳...';btn.disabled=true;}
     setAS('go','🔔 Bell ringing...');
     getAC().then(function(ctx){
-        if(!ctx){alert('Use Chrome.');resetBtns();return;}
-        threeBells(ctx);
-        setTimeout(function(){startOm(ctx);setTimeout(function(){speakValluvar('btnValluvar');},1500);},4500);
+        if(!ctx){
+            speakValluvar('btnValluvar');
+            return;
+        }
+        var doIt = function() {
+            threeBells(ctx);
+            setTimeout(function(){
+                startOm(ctx);
+                setTimeout(function(){ speakValluvar('btnValluvar'); }, 1500);
+            }, 4500);
+        };
+        if(ctx.state==='suspended'){
+            ctx.resume().then(doIt).catch(function(){ speakValluvar('btnValluvar'); });
+        } else {
+            doIt();
+        }
     });
 }
-function valluvarOnly() { getAC().then(function(){speakValluvar('btnValluvar');}); }
+
+function valluvarOnly() {
+    getAC().then(function(ctx){
+        if(ctx && ctx.state==='suspended') ctx.resume();
+        speakValluvar('btnValluvar');
+    });
+}
+
 function bellAndEnglish() {
     var btn=document.getElementById('btnEngFull');
     if(btn){btn.textContent='⏳...';btn.disabled=true;}
     getAC().then(function(ctx){
-        if(!ctx){alert('Use Chrome.');resetBtns();return;}
-        threeBells(ctx);
-        setTimeout(function(){startOm(ctx);setTimeout(function(){speakEng(engScript(),'btnEngFull');},1500);},4500);
+        if(!ctx){
+            speakEng(engScript(),'btnEngFull');
+            return;
+        }
+        var doIt = function() {
+            threeBells(ctx);
+            setTimeout(function(){
+                startOm(ctx);
+                setTimeout(function(){ speakEng(engScript(),'btnEngFull'); }, 1500);
+            }, 4500);
+        };
+        if(ctx.state==='suspended'){
+            ctx.resume().then(doIt).catch(function(){ speakEng(engScript(),'btnEngFull'); });
+        } else {
+            doIt();
+        }
     });
 }
-function quickEng() { getAC().then(function(){speakEng(quickScript(),'btnEngFull');}); }
+
+function quickEng() {
+    getAC().then(function(ctx){
+        if(ctx && ctx.state==='suspended') ctx.resume();
+        speakEng(quickScript(),'btnEngFull');
+    });
+}
+
 function bellOnly() {
     setAS('go','🔔 Ringing...');
     getAC().then(function(ctx){
-        if(!ctx){alert('Use Chrome.');return;}
-        threeBells(ctx);
-        setTimeout(function(){setAS('on','✅ Bell done');},5000);
+        if(!ctx){ alert('Bell not supported on this browser.'); return; }
+        var doIt = function() {
+            threeBells(ctx);
+            setTimeout(function(){ setAS('on','✅ Bell done'); }, 5000);
+        };
+        if(ctx.state==='suspended'){
+            ctx.resume().then(doIt);
+        } else {
+            doIt();
+        }
     });
 }
+
 function stopAll() {
     if('speechSynthesis' in window) window.speechSynthesis.cancel();
-    stopOm(); speaking=false; resetBtns(); setAS('on','Stopped');
-    var s=document.getElementById('sBox'); if(s) s.style.display='none';
-    var fa=document.getElementById('fishAudio'); if(fa){try{fa.pause();fa.currentTime=0;}catch(e){}}
+    stopOm();
+    speaking = false;
+    resetBtns();
+    setAS('on','Stopped');
+    var s=document.getElementById('sBox');
+    if(s) s.style.display='none';
+    var fa=document.getElementById('fishAudio');
+    if(fa){ try{ fa.pause(); fa.currentTime=0; fa.src=''; }catch(e){} }
+    if(fishAudioUrl){ URL.revokeObjectURL(fishAudioUrl); fishAudioUrl=null; }
 }
 
 function speakValluvar(btnId) {
-    if(!('speechSynthesis' in window)){alert('Use Chrome.');return;}
+    if(!('speechSynthesis' in window)){ alert('Voice not supported on this browser.'); resetBtns(); return; }
     var script=buildTamilScript();
     showScript(script,'tamil');
-    window.speechSynthesis.cancel(); speaking=true;
+    window.speechSynthesis.cancel();
+    speaking=true;
     var u=new SpeechSynthesisUtterance(script);
     u.rate=0.90; u.pitch=0.75; u.volume=1.0;
     var voices=window.speechSynthesis.getVoices();
-    var tv=voices.find(function(v){return v.name==='Microsoft Valluvar - Tamil (India)';}) ||
-           voices.find(function(v){return v.name.indexOf('Valluvar')!==-1;}) ||
-           voices.find(function(v){return v.lang==='ta-IN';}) ||
-           voices.find(function(v){return v.lang.startsWith('ta');});
-    if(tv){u.voice=tv;setAS('go','🎙️ '+tv.name+' chanting...');}
-    else setAS('go','🎙️ Chanting...');
+    var tv=
+        voices.find(function(v){return v.name==='Microsoft Valluvar - Tamil (India)';}) ||
+        voices.find(function(v){return v.name.indexOf('Valluvar')!==-1;}) ||
+        voices.find(function(v){return v.lang==='ta-IN';}) ||
+        voices.find(function(v){return v.lang.startsWith('ta');});
+    if(tv){ u.voice=tv; setAS('go','🎙️ '+tv.name+' chanting...'); }
+    else { setAS('go','🎙️ Chanting...'); }
     var btn=document.getElementById(btnId);
     if(btn){btn.textContent='🎙️ Chanting...';btn.disabled=true;}
-    u.onend=function(){speaking=false;stopOm();if(btn){btn.textContent='🔔 Bell + 🎙️ Tamil Valluvar';btn.disabled=false;}setAS('on','✅ Complete. Sarva Mangala! 🙏');appendDone();};
-    u.onerror=function(e){speaking=false;stopOm();resetBtns();setAS('err','⚠️ '+e.error);};
+    u.onend=function(){
+        speaking=false; stopOm();
+        if(btn){btn.textContent='🔔 Bell + 🎙️ Tamil Valluvar';btn.disabled=false;}
+        setAS('on','✅ Complete. Sarva Mangala! 🙏');
+        appendDone();
+    };
+    u.onerror=function(e){
+        speaking=false; stopOm(); resetBtns();
+        setAS('err','⚠️ '+e.error);
+    };
     window.speechSynthesis.speak(u);
-    var ka=setInterval(function(){if(!speaking){clearInterval(ka);return;}if(window.speechSynthesis.paused)window.speechSynthesis.resume();},8000);
+    var ka=setInterval(function(){
+        if(!speaking){clearInterval(ka);return;}
+        if(window.speechSynthesis.paused) window.speechSynthesis.resume();
+    },8000);
 }
 
 function speakEng(text,btnId) {
-    if(!('speechSynthesis' in window)){alert('Use Chrome.');return;}
-    window.speechSynthesis.cancel(); speaking=true;
-    showScript(text,'eng'); setAS('go','🎙️ English archana...');
+    if(!('speechSynthesis' in window)){ alert('Voice not supported.'); resetBtns(); return; }
+    window.speechSynthesis.cancel();
+    speaking=true;
+    showScript(text,'eng');
+    setAS('go','🎙️ English archana...');
     var u=new SpeechSynthesisUtterance(text);
     u.rate=0.90; u.pitch=0.70; u.volume=1.0;
     var voices=window.speechSynthesis.getVoices();
-    var v=voices.find(function(v){return v.lang==='en-IN';}) || voices.find(function(v){return v.lang==='en-GB';}) || voices.find(function(v){return v.lang.startsWith('en');});
+    var v=
+        voices.find(function(v){return v.lang==='en-IN';}) ||
+        voices.find(function(v){return v.lang==='en-GB';}) ||
+        voices.find(function(v){return v.lang.startsWith('en');});
     if(v) u.voice=v;
     var btn=document.getElementById(btnId);
     if(btn){btn.textContent='🎙️ Chanting...';btn.disabled=true;}
-    u.onend=function(){speaking=false;stopOm();if(btn){btn.textContent='🔔 Bell + 🎙️ English Priest';btn.disabled=false;}setAS('on','✅ Complete. Govinda!');appendDone();};
-    u.onerror=function(e){speaking=false;stopOm();resetBtns();setAS('err','⚠️ '+e.error);};
+    u.onend=function(){
+        speaking=false; stopOm();
+        if(btn){btn.textContent='🔔 Bell + 🎙️ English Priest';btn.disabled=false;}
+        setAS('on','✅ Complete. Govinda!');
+        appendDone();
+    };
+    u.onerror=function(e){ speaking=false; stopOm(); resetBtns(); setAS('err','⚠️ '+e.error); };
     window.speechSynthesis.speak(u);
-    var ka=setInterval(function(){if(!speaking){clearInterval(ka);return;}if(window.speechSynthesis.paused)window.speechSynthesis.resume();},8000);
+    var ka=setInterval(function(){
+        if(!speaking){clearInterval(ka);return;}
+        if(window.speechSynthesis.paused) window.speechSynthesis.resume();
+    },8000);
 }
 
 function buildTamilScript() {
     if(!bData) return 'Om. Om. Om. Nama Shivaya. Govindaa.';
-    // ✅ FIXED: use devoteeRaasi and devoteeNakshatram
-    var raasi  = bData.devoteeRaasi  || bData.gothram    || '';
-    var naksha = bData.devoteeNakshatram || bData.nakshatram || '';
-    var name   = bData.devoteeName   || '';
+    var raasi  = bData.devoteeRaasi       || bData.gothram    || '';
+    var naksha = bData.devoteeNakshatram  || bData.nakshatram || '';
+    var name   = bData.devoteeName       || '';
     return 'Om. Om. Om. Shubham Karodi Kalyanam. Aarogyam. Thana Sampatha. Om. Adiyargale. '+name+'. Avargalukku. '+raasi+'. Raasi. '+naksha+'. Natchathiram. '+vChant(bData.archanaType)+'Sarva Mangalam. Piraapthirastu. Aayu. Arokyam. Aishwaryam. Om Shaanthi. Om Shaanthi. Om Shaanthi. Jai Sri Venkadaeshwara. Govindaa. Govindaa. Govindaa.';
 }
 
 function engScript() {
     if(!bData) return 'Om. Archana samarpanam. Govinda.';
-    // ✅ FIXED: use devoteeRaasi and devoteeNakshatram
-    var raasi  = bData.devoteeRaasi  || bData.gothram    || '';
-    var naksha = bData.devoteeNakshatram || bData.nakshatram || '';
-    var name   = bData.devoteeName   || '';
+    var raasi  = bData.devoteeRaasi       || bData.gothram    || '';
+    var naksha = bData.devoteeNakshatram  || bData.nakshatram || '';
+    var name   = bData.devoteeName       || '';
     return 'Om. Om. Om. Shubham Karoti Kalyanam. '+name+' avargalukku. '+raasi+' raasi. '+naksha+' nakshatram. '+eChant(bData.archanaType)+'Sarva Mangala Prapthirastu. Om Shanti. Om Shanti. Om Shanti. Jai Sri Venkateswara. Govinda. Govinda. Govinda.';
 }
 
@@ -611,17 +817,23 @@ function setAS(state,msg) {
 }
 function resetBtns() {
     var m={
-        'btnGTamil':'🐟 Fish AI Tamil Priest Voice',
-        'btnGEng':'🐟 Fish AI English Priest Voice',
+        'btnGTamil' :'🐟 Fish AI Tamil Priest Voice',
+        'btnGEng'   :'🐟 Fish AI English Priest Voice',
         'btnValluvar':'🔔 Bell + 🎙️ Tamil Valluvar',
-        'btnEngFull':'🔔 Bell + 🎙️ English Priest'
+        'btnEngFull' :'🔔 Bell + 🎙️ English Priest'
     };
-    Object.keys(m).forEach(function(id){var b=document.getElementById(id);if(b){b.disabled=false;b.textContent=m[id];}});
+    Object.keys(m).forEach(function(id){
+        var b=document.getElementById(id);
+        if(b){b.disabled=false;b.textContent=m[id];}
+    });
 }
 
 function startCam() {
     showSt('Starting camera...','info');
-    if(typeof ZXing==='undefined'||!ZXing.BrowserQRCodeReader){showSt('QR library not loaded. Use manual entry or refresh.','err');return;}
+    if(typeof ZXing==='undefined'||!ZXing.BrowserQRCodeReader){
+        showSt('QR library not loaded. Use manual entry or refresh.','err');
+        return;
+    }
     navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}})
         .then(function(stream){
             stream.getTracks().forEach(function(t){t.stop();});
@@ -629,9 +841,18 @@ function startCam() {
                 camScanner=new ZXing.BrowserQRCodeReader();
                 document.getElementById('btnStart').style.display='none';
                 document.getElementById('btnStop').style.display='flex';
-                camScanner.decodeFromVideoDevice(null,document.getElementById('camVideo'),function(result){
-                    if(result){var id=extractID(result.getText());document.getElementById('bidInput').value=id;stopCam();verifyAPI(id);}
-                });
+                camScanner.decodeFromVideoDevice(
+                    null,
+                    document.getElementById('camVideo'),
+                    function(result){
+                        if(result){
+                            var id=extractID(result.getText());
+                            document.getElementById('bidInput').value=id;
+                            stopCam();
+                            verifyAPI(id);
+                        }
+                    }
+                );
                 showSt('Camera ready. Point at QR code.','ok');
             } catch(e) {
                 document.getElementById('btnStart').style.display='flex';
@@ -639,19 +860,26 @@ function startCam() {
                 showSt('Camera error: '+e.message,'err');
             }
         })
-        .catch(function(e){showSt('Camera permission denied: '+e.message,'err');});
+        .catch(function(e){
+            showSt('Camera permission denied: '+e.message,'err');
+        });
 }
+
 function stopCam() {
     if(camScanner){try{camScanner.reset();}catch(e){}camScanner=null;}
     document.getElementById('btnStart').style.display='flex';
     document.getElementById('btnStop').style.display='none';
     showSt('Camera stopped.','info');
 }
+
 function extractID(text) {
     var lines=text.split('\n');
-    for(var i=0;i<lines.length;i++){if(lines[i].indexOf('BookingID:')!==-1)return lines[i].replace('BookingID:','').trim();}
+    for(var i=0;i<lines.length;i++){
+        if(lines[i].indexOf('BookingID:')!==-1)
+            return lines[i].replace('BookingID:','').trim();
+    }
     var t=text.trim();
-    return t.indexOf('TEMPLE-')===0?t.split('\n')[0]:t;
+    return t.indexOf('TEMPLE-')===0 ? t.split('\n')[0] : t;
 }
 </script>
 </body>
